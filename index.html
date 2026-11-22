@@ -5,162 +5,233 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Memorise Notes</title>
 <meta name="color-scheme" content="light dark">
-<style>:root {
-  --bg: #f6f7fb; --surface: #ffffff; --surface-2: #eef0f6; --text: #1b1f2a; --muted: #5d6475;
-  --border: #d9dce5; --primary: #3b5bdb; --primary-text: #fff; --focus: #f59f00;
-  --ok: #1f8a4c; --ok-bg: #e6f6ec; --warn: #9a6700; --warn-bg: #fff4d6; --bad: #c92a2a; --bad-bg: #fde8e8;
-  --radius: 14px; --shadow: 0 2px 10px rgba(20, 30, 60, .07);
+<meta name="theme-color" content="#0D470C">
+<!-- Fonts load when online; offline the app falls back to system fonts. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,800&display=swap" rel="stylesheet">
+<style>/* Visual style: acid lime + deep forest green, big uppercase display type,
+   chunky outlines with hard offset shadows, sticker-strip accents, playful motion. */
+:root {
+  --lime: #B6FE00; --forest: #0D470C; --forest-2: #145c12;
+  --bg: #F4F1E4; --surface: #FFFDF6; --surface-2: #EAE6D2; --text: #0D2B0C; --muted: #4E644B;
+  --border: #0D470C; --ink: #0D470C; --primary: #B6FE00; --primary-text: #0D470C; --focus: #E8590C;
+  --ok: #17803d; --ok-bg: #E3F7D4; --warn: #8a5a00; --warn-bg: #FFF0C2; --bad: #C92A2A; --bad-bg: #FDE4E1;
+  --strip: rgba(182, 254, 0, .75);
+  --radius: 18px; --shadow: 4px 4px 0 var(--ink);
+  --display: "Archivo Black", "Arial Black", Impact, system-ui, sans-serif;
+  --body: "DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 [data-theme="dark"] {
-  --bg: #11141b; --surface: #1a1e28; --surface-2: #242a37; --text: #e8eaf0; --muted: #a2a9b9;
-  --border: #323a4a; --primary: #7c94ff; --primary-text: #0d1020; --focus: #ffc94d;
-  --ok: #5fd08f; --ok-bg: #143323; --warn: #ffd36b; --warn-bg: #3a2f10; --bad: #ff8a8a; --bad-bg: #3d1818;
-  --shadow: 0 2px 12px rgba(0, 0, 0, .35);
+  --bg: #061a06; --surface: #0D3A0C; --surface-2: #145012; --text: #F2FBE3; --muted: #B5CDA4;
+  --border: #B6FE00; --ink: #000; --primary: #B6FE00; --primary-text: #0D470C; --focus: #FFB86B;
+  --ok: #8BF07A; --ok-bg: #12401a; --warn: #FFD36B; --warn-bg: #3d3110; --bad: #FF9C8F; --bad-bg: #451a16;
+  --strip: rgba(182, 254, 0, .55);
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-h1 { font-size: 1.6rem; line-height: 1.25; margin: .2em 0 .4em; }
-h2 { font-size: 1.15rem; margin: 1.2em 0 .5em; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 var(--body); }
+h1, h2, .display { font-family: var(--display); font-weight: 400; text-transform: uppercase; letter-spacing: -.01em; }
+h1 { font-size: clamp(1.6rem, 4.5vw, 2.4rem); line-height: 1.05; margin: .2em 0 .35em; }
+h2 { font-size: 1.15rem; line-height: 1.15; margin: 1.4em 0 .6em; }
 .card h2:first-child { margin-top: 0; }
-:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
 .muted { color: var(--muted); } .small { font-size: .88rem; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
+/* ---------- header ---------- */
 .topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 8px;
-  padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border); }
-.brand { font-weight: 700; font-size: 1.1rem; background: none; border: 0; color: var(--text); cursor: pointer; padding: 6px 4px; }
+  padding: 10px 16px; background: var(--forest); color: #F2FBE3; border-bottom: 3px solid var(--lime); }
+.brand { font-family: var(--display); text-transform: uppercase; font-size: 1.05rem; letter-spacing: .01em;
+  background: none; border: 0; color: var(--lime); cursor: pointer; padding: 6px 4px; }
 .topnav { display: flex; gap: 4px; align-items: center; }
-.topnav button { background: none; border: 0; color: var(--text); font: inherit; font-size: .95rem; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
-.topnav button:hover { background: var(--surface-2); }
-.topnav button[aria-current="page"] { background: var(--surface-2); font-weight: 600; }
-main { max-width: 860px; margin: 0 auto; padding: 20px 16px 80px; }
+.topnav button { background: none; border: 2px solid transparent; color: #F2FBE3; font: inherit; font-size: .8rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .08em; padding: 7px 12px; border-radius: 99px; cursor: pointer; }
+.topnav button:hover { border-color: var(--lime); }
+.topnav button[aria-current="page"] { background: var(--lime); color: var(--forest); }
+main { max-width: 880px; margin: 0 auto; padding: 22px 16px 90px; }
 
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); margin: 12px 0; }
-.grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
-.topic-card h2 { margin: 0 0 4px; }
+/* ---------- home hero + marquee ---------- */
+.hero { padding: 10px 0 4px; }
+.hero-title { font-family: var(--display); text-transform: uppercase; font-size: clamp(2.6rem, 11vw, 5.6rem); line-height: .92; margin: 0; letter-spacing: -.02em; }
+.hero-title .w { display: inline-block; animation: rise .7s cubic-bezier(.2, .9, .3, 1.2) both; }
+.hero-title .w:nth-child(2) { animation-delay: .08s; } .hero-title .w:nth-child(3) { animation-delay: .16s; } .hero-title .w:nth-child(4) { animation-delay: .24s; }
+.hero-title .hl { background: var(--lime); color: var(--forest); padding: 0 .12em; border-radius: .12em; transform: rotate(-2deg); }
+.hero-sub { font-size: 1.05rem; max-width: 34em; margin: 14px 0 0; }
+@keyframes rise { from { transform: translateY(60%) rotate(4deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.marquee { margin: 22px -16px 8px; background: var(--forest); color: var(--lime); border-block: 3px solid var(--ink); overflow: hidden; transform: rotate(-1.2deg); }
+[data-theme="dark"] .marquee { background: var(--lime); color: var(--forest); }
+.marquee-track { display: flex; width: max-content; animation: scroll 28s linear infinite; }
+.marquee span { font-family: var(--display); text-transform: uppercase; font-size: 1.05rem; padding: 9px 0; white-space: nowrap; }
+@keyframes scroll { to { transform: translateX(-50%); } }
 
-.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: inherit; font-size: .95rem; font-weight: 600;
-  padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; min-height: 44px; }
-.btn:hover { filter: brightness(.97); }
-.btn.primary { background: var(--primary); color: var(--primary-text); border-color: var(--primary); }
-.btn.ghost { background: transparent; }
+/* ---------- cards ---------- */
+.card { position: relative; background: var(--surface); border: 2.5px solid var(--border); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); margin: 14px 0; }
+.grid { display: grid; gap: 22px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); margin-top: 18px; }
+.topic-card { padding-top: 26px; transition: transform .2s; }
+.topic-card::before { /* sticker strip */
+  content: ""; position: absolute; top: -12px; left: 22px; width: 92px; height: 24px; background: var(--strip);
+  border: 1.5px dashed rgba(13, 71, 12, .35); transform: rotate(-5deg); border-radius: 3px; }
+.topic-card:nth-child(even)::before { left: auto; right: 22px; transform: rotate(4deg); }
+.topic-card:hover { transform: rotate(-.6deg) translateY(-3px); }
+.topic-card h2 { margin: 0 0 6px; font-size: 1.25rem; }
+.topic-num { display: inline-block; font-family: var(--display); font-size: .8rem; background: var(--forest); color: var(--lime);
+  padding: 2px 10px; border-radius: 99px; margin-bottom: 8px; }
+[data-theme="dark"] .topic-num { background: var(--lime); color: var(--forest); }
+
+/* ---------- buttons ---------- */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: inherit; font-size: .85rem; font-weight: 800;
+  text-transform: uppercase; letter-spacing: .06em; padding: 10px 18px; border-radius: 99px; border: 2.5px solid var(--border);
+  background: var(--surface); color: var(--text); cursor: pointer; min-height: 46px; box-shadow: 3px 3px 0 var(--ink);
+  transition: transform .12s, box-shadow .12s; }
+.btn:hover:not(:disabled) { transform: translate(-1px, -1px); box-shadow: 5px 5px 0 var(--ink); }
+.btn:active:not(:disabled) { transform: translate(3px, 3px); box-shadow: 0 0 0 var(--ink); }
+.btn.primary { background: var(--primary); color: var(--primary-text); border-color: var(--ink); }
+[data-theme="dark"] .btn.primary { border-color: var(--lime); }
+.btn.ghost { background: transparent; box-shadow: none; }
+.btn.ghost:hover:not(:disabled) { box-shadow: 3px 3px 0 var(--ink); }
 .btn.danger { color: var(--bad); }
-.btn.big { font-size: 1.05rem; padding: 12px 22px; }
-.btn.small { min-height: 34px; padding: 4px 10px; font-size: .85rem; }
-.btn:disabled { opacity: .5; cursor: not-allowed; }
-.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.btn.big { font-size: .95rem; padding: 13px 24px; }
+.btn.small { min-height: 34px; padding: 4px 12px; font-size: .75rem; box-shadow: 2px 2px 0 var(--ink); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
 
-.progress { height: 12px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin: 8px 0; border: 1px solid var(--border); }
-.progress > div { height: 100%; background: var(--primary); border-radius: 99px; transition: width .4s; }
-.progress.ok > div { background: var(--ok); } .progress.warn > div { background: var(--warn); } .progress.bad > div { background: var(--bad); }
-.progress.big { height: 18px; }
+/* ---------- progress ---------- */
+.progress { height: 16px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin: 10px 0; border: 2px solid var(--border); }
+.progress > div { height: 100%; background: var(--lime); border-right: 2px solid var(--ink); border-radius: 99px; transition: width .5s cubic-bezier(.2, .9, .3, 1.1); }
+.progress > div[style="width:0%"] { border-right: 0; }
+.progress.ok > div { background: var(--lime); } .progress.warn > div { background: #FFD43B; } .progress.bad > div { background: #FF8A7A; }
+.progress.big { height: 22px; }
 
+/* ---------- study ---------- */
 .session-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
-.eyebrow { margin: 0; color: var(--muted); font-size: .85rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
-.label { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 6px; display: block; }
-.statement-text { font-size: 1.2rem; line-height: 1.55; margin: 0; }
-.statement-card { border-left: 6px solid var(--primary); }
-.hidden-card { text-align: center; background: repeating-linear-gradient(45deg, var(--surface), var(--surface) 10px, var(--surface-2) 10px, var(--surface-2) 20px); }
-.hidden-card p { margin: 4px 0; }
-.question-card { border-left: 6px solid var(--focus); }
+.eyebrow { margin: 0; color: var(--muted); font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; }
+.label { font-size: .74rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 0 0 8px; display: block; }
+.statement-text { font-size: 1.22rem; line-height: 1.55; margin: 0; font-weight: 500; }
+.statement-card, .note-card { background: var(--surface); border-left-width: 10px; animation: flip-in .45s cubic-bezier(.2, .9, .3, 1.1) both; }
+.note-card::before { content: "NOTE"; position: absolute; top: -13px; right: 18px; font-family: var(--display); font-size: .75rem;
+  background: var(--lime); color: var(--forest); border: 2px solid var(--ink); padding: 2px 12px; border-radius: 99px; transform: rotate(3deg); }
+@keyframes flip-in { from { transform: translateY(14px) rotate(-1.5deg); opacity: 0; } to { transform: none; opacity: 1; } }
+.hidden-card { text-align: center; background: repeating-linear-gradient(-45deg, var(--surface), var(--surface) 12px, var(--surface-2) 12px, var(--surface-2) 24px); padding: 12px; }
+.hidden-card p { margin: 0; }
+.question-card { background: var(--forest); color: #F2FBE3; border-color: var(--ink); }
+.question-card .label { color: var(--lime); }
+[data-theme="dark"] .question-card { background: #0a2e09; border-color: var(--lime); }
 
-.answer-box { width: 100%; font: inherit; font-size: 1.1rem; padding: 14px; border-radius: 12px; border: 2px solid var(--border);
-  background: var(--surface); color: var(--text); min-height: 150px; resize: vertical; }
-.answer-box:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 30%, transparent); }
+.answer-box { width: 100%; font: inherit; font-size: 1.12rem; padding: 16px; border-radius: 16px; border: 2.5px solid var(--border);
+  background: var(--surface); color: var(--text); min-height: 160px; resize: vertical; box-shadow: inset 3px 3px 0 var(--surface-2); }
+.answer-box:focus { outline: none; box-shadow: 4px 4px 0 var(--lime), 0 0 0 3px var(--focus); }
 .answer-box:disabled { opacity: .75; }
-.attempts { margin: 6px 0 0; font-weight: 600; color: var(--muted); }
-.badge { display: inline-block; font-size: .75rem; padding: 2px 8px; border-radius: 99px; vertical-align: middle; font-weight: 700; }
+.attempts { margin: 8px 0 0; font-weight: 800; color: var(--muted); text-transform: uppercase; font-size: .78rem; letter-spacing: .08em; }
+.badge { display: inline-block; font-family: var(--body); font-size: .72rem; padding: 3px 10px; border-radius: 99px; vertical-align: middle; font-weight: 800; letter-spacing: .05em; border: 2px solid currentColor; }
 .badge.warn { background: var(--warn-bg); color: var(--warn); }
-.badge.ok { background: var(--ok-bg); color: var(--ok); }
-.big-badge { font-size: 1rem; padding: 6px 14px; }
+.badge.ok { background: var(--lime); color: var(--forest); border-color: var(--ink); }
+.big-badge { font-size: .95rem; padding: 6px 16px; transform: rotate(-2deg); }
 
-.feedback { border-radius: 12px; padding: 14px 16px; margin-top: 14px; border: 2px solid; }
-.feedback.ok { background: var(--ok-bg); border-color: var(--ok); }
-.feedback.warn { background: var(--warn-bg); border-color: var(--warn); }
-.feedback.bad { background: var(--bad-bg); border-color: var(--bad); }
-.grade { font-size: 1.25rem; font-weight: 800; margin: 0 0 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.feedback.ok .grade { color: var(--ok); } .feedback.warn .grade { color: var(--warn); } .feedback.bad .grade { color: var(--bad); }
-.grade-icon { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: var(--surface); }
+/* feedback: colour + icon + text label */
+.feedback { border-radius: 16px; padding: 16px 18px; margin-top: 16px; border: 2.5px solid; box-shadow: 4px 4px 0 currentColor; animation: pop .35s ease; }
+.feedback.ok { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.feedback.warn { background: var(--warn-bg); border-color: var(--warn); color: var(--warn); }
+.feedback.bad { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+.feedback > *:not(.grade) { color: var(--text); }
+.grade { font-family: var(--display); text-transform: uppercase; font-size: 1.45rem; margin: 0 0 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.grade-icon { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; color: var(--surface); font-family: var(--body); font-weight: 900; }
 .feedback.ok .grade-icon { background: var(--ok); } .feedback.warn .grade-icon { background: var(--warn); } .feedback.bad .grade-icon { background: var(--bad); }
-.grade-pct { font-size: .9rem; font-weight: 600; color: var(--text); }
-.chips { list-style: none; padding: 0; margin: 0 0 10px; display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { padding: 3px 10px; border-radius: 99px; font-size: .9rem; font-weight: 600; background: var(--surface); border: 1px solid; }
-.chip.ok { color: var(--ok); border-color: var(--ok); } .chip.bad { color: var(--bad); border-color: var(--bad); }
+.grade-pct { font-family: var(--body); text-transform: none; font-size: .9rem; font-weight: 700; color: var(--text); }
+.chips { list-style: none; padding: 0; margin: 0 0 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { padding: 3px 12px; border-radius: 99px; font-size: .9rem; font-weight: 700; background: var(--surface); border: 2px solid; }
+.chip.ok { color: var(--ok); border-color: var(--ok); } .chip.bad { color: var(--bad); border-color: var(--bad); border-style: dashed; }
 .syn { font-weight: 400; opacity: .8; }
-.hint, .compare, .reveal { background: var(--surface); border-radius: 10px; padding: 10px 14px; margin-top: 8px; border: 1px solid var(--border); }
+.hint, .compare, .reveal { background: var(--surface); border-radius: 12px; padding: 12px 14px; margin-top: 10px; border: 2px solid var(--border); }
 .hint p, .compare p, .reveal p { margin: 4px 0; }
 
-.hud { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0; }
-.hud-item { background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 4px 12px; }
-.hud-item.hot { border-color: var(--warn); background: var(--warn-bg); }
-.quiz-tools { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
-.timer { height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
-.timer > div { height: 100%; width: 100%; background: var(--primary); transition: width .1s linear; }
-.timer > div.low { background: var(--bad); }
-.options { display: grid; gap: 10px; }
-.option { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; text-align: left; font: inherit; padding: 14px; min-height: 56px;
-  border-radius: 12px; border: 2px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
-.option:hover:not(:disabled) { border-color: var(--primary); }
+/* ---------- quiz ---------- */
+.hud { display: flex; flex-wrap: wrap; gap: 10px; margin: 10px 0; }
+.hud-item { background: var(--surface); border: 2px solid var(--border); border-radius: 99px; padding: 4px 14px; font-weight: 600; }
+.hud-item.hot { background: var(--lime); color: var(--forest); border-color: var(--ink); animation: wiggle .5s ease; }
+@keyframes wiggle { 25% { transform: rotate(-4deg); } 75% { transform: rotate(4deg); } }
+.quiz-tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.timer { height: 12px; background: var(--surface-2); border: 2px solid var(--border); border-radius: 99px; overflow: hidden; }
+.timer > div { height: 100%; width: 100%; background: var(--lime); transition: width .1s linear; }
+.timer > div.low { background: #FF6B5B; }
+.options { display: grid; gap: 12px; }
+.option { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; text-align: left; font: inherit; font-weight: 600; padding: 14px 16px; min-height: 60px;
+  border-radius: 16px; border: 2.5px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer;
+  box-shadow: 3px 3px 0 var(--ink); transition: transform .12s, box-shadow .12s, background .12s; }
+.option:hover:not(:disabled) { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--ink); background: var(--surface-2); }
 .option:disabled { cursor: default; }
-.opt-key { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: var(--surface-2); font-weight: 700; flex: none; }
+.opt-key { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--forest); color: var(--lime); font-family: var(--display); flex: none; }
+[data-theme="dark"] .opt-key { background: var(--lime); color: var(--forest); }
 .option.correct { border-color: var(--ok); background: var(--ok-bg); }
 .option.wrong { border-color: var(--bad); background: var(--bad-bg); }
-.opt-tag { margin-left: auto; font-weight: 700; font-size: .85rem; }
+.opt-tag { margin-left: auto; font-weight: 800; font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; }
 .option.correct .opt-tag { color: var(--ok); } .option.wrong .opt-tag { color: var(--bad); }
 .pop { animation: pop .35s ease; } .shake { animation: shake .35s ease; }
-@keyframes pop { 0% { transform: scale(.94); } 60% { transform: scale(1.03); } 100% { transform: scale(1); } }
-@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
-@media (prefers-reduced-motion: reduce) { .pop, .shake { animation: none; } * { transition: none !important; } }
+@keyframes pop { 0% { transform: scale(.94) rotate(-1deg); } 60% { transform: scale(1.03) rotate(.5deg); } 100% { transform: none; } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-7px); } 75% { transform: translateX(7px); } }
 
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 12px 0; }
-.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; text-align: center; }
-.stat-num { display: block; font-size: 1.7rem; font-weight: 800; }
-.stat-lbl { color: var(--muted); font-size: .85rem; }
-.result-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
-.result-list li { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+/* ---------- results ---------- */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 16px 0; }
+.stat { background: var(--surface); border: 2.5px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; box-shadow: var(--shadow); }
+.stat:first-child { background: var(--lime); color: var(--forest); border-color: var(--ink); }
+.stat:first-child .stat-lbl { color: var(--forest); }
+.stat-num { display: block; font-family: var(--display); font-size: 2rem; line-height: 1.1; }
+.stat-lbl { color: var(--muted); font-size: .75rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+.result-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.result-list li { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; background: var(--surface); border: 2px solid var(--border); border-radius: 14px; padding: 12px 14px; }
 .result-list li > .small { grid-column: 2; }
-.pill { font-weight: 700; font-size: .85rem; padding: 2px 8px; border-radius: 99px; height: fit-content; white-space: nowrap; }
+.pill { font-weight: 800; font-size: .8rem; padding: 2px 10px; border-radius: 99px; height: fit-content; white-space: nowrap; border: 2px solid currentColor; }
 .pill.ok { background: var(--ok-bg); color: var(--ok); } .pill.bad { background: var(--bad-bg); color: var(--bad); }
 
-.toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
-.manage-grid { display: grid; gap: 12px; grid-template-columns: 260px 1fr; align-items: start; }
-.topic-list { list-style: none; padding: 0; margin: 0 0 10px; display: grid; gap: 4px; }
-.topic-pick { width: 100%; text-align: left; font: inherit; font-size: .95rem; padding: 8px 10px; border-radius: 8px; border: 1px solid transparent; background: none; color: var(--text); cursor: pointer; }
-.topic-pick:hover { background: var(--surface-2); }
-.topic-pick.active { background: var(--surface-2); border-color: var(--primary); font-weight: 600; }
+/* ---------- manage ---------- */
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; }
+.manage-grid { display: grid; gap: 16px; grid-template-columns: 270px 1fr; align-items: start; }
+.topic-list { list-style: none; padding: 0; margin: 0 0 12px; display: grid; gap: 6px; }
+.topic-pick { width: 100%; text-align: left; font: inherit; font-size: .95rem; font-weight: 600; padding: 9px 12px; border-radius: 12px; border: 2px solid transparent; background: none; color: var(--text); cursor: pointer; }
+.topic-pick:hover { border-color: var(--border); }
+.topic-pick.active { background: var(--lime); color: var(--forest); border-color: var(--ink); }
+.topic-pick.active .muted { color: var(--forest); }
 .inline-form { display: flex; flex-wrap: wrap; gap: 8px; }
 .inline-form input { flex: 1 1 160px; }
-input:not([type=radio]):not([type=file]), .editor textarea { font: inherit; font-size: 1rem; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); width: 100%; min-height: 44px; }
+input:not([type=radio]):not([type=file]), .editor textarea { font: inherit; font-size: 1rem; padding: 10px 14px; border-radius: 12px; border: 2px solid var(--border); background: var(--surface); color: var(--text); width: 100%; min-height: 46px; }
+input:focus, .editor textarea:focus { outline: none; box-shadow: 3px 3px 0 var(--lime), 0 0 0 3px var(--focus); }
 .inline-form input { width: auto; }
-.st-list { padding-left: 1.4em; display: grid; gap: 10px; }
-.st-list li { padding-bottom: 10px; border-bottom: 1px solid var(--border); }
-.st-text { display: block; } .st-meta { display: block; } .st-actions { display: flex; gap: 6px; margin-top: 4px; }
+.st-list { padding-left: 1.5em; display: grid; gap: 12px; }
+.st-list li { padding-bottom: 12px; border-bottom: 2px dashed var(--surface-2); }
+.st-list li::marker { font-family: var(--display); }
+.st-text { display: block; } .st-meta { display: block; } .st-actions { display: flex; gap: 8px; margin-top: 6px; }
 .bad-text { color: var(--bad); }
-.editor { margin-top: 18px; border-top: 2px solid var(--border); padding-top: 8px; }
-.editor > label, .fu-block > label, fieldset > label { display: block; font-weight: 600; font-size: .9rem; margin: 12px 0 4px; }
-fieldset { border: 1px solid var(--border); border-radius: 12px; margin: 16px 0; padding: 8px 14px 14px; }
-legend { font-weight: 700; padding: 0 6px; }
-.fu-block { border-top: 1px dashed var(--border); padding-top: 8px; margin-top: 8px; }
+.editor { margin-top: 20px; border-top: 3px solid var(--border); padding-top: 8px; }
+.editor > label, .fu-block > label, fieldset > label { display: block; font-weight: 700; font-size: .9rem; margin: 12px 0 4px; }
+fieldset { border: 2px solid var(--border); border-radius: 14px; margin: 18px 0; padding: 8px 16px 16px; }
+legend { font-family: var(--display); text-transform: uppercase; font-size: .9rem; padding: 2px 10px; background: var(--lime); color: var(--forest); border-radius: 99px; border: 2px solid var(--ink); }
+.fu-block { border-top: 2px dashed var(--surface-2); padding-top: 8px; margin-top: 10px; }
 .fu-block:first-of-type { border-top: 0; }
-.mcq-opt { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
-.mcq-opt input[type=radio] { width: 22px; height: 22px; flex: none; accent-color: var(--ok); }
-.form-error { color: var(--bad); font-weight: 600; }
-.howto summary { cursor: pointer; font-weight: 700; }
+.mcq-opt { display: flex; align-items: center; gap: 10px; margin: 8px 0; }
+.mcq-opt input[type=radio] { width: 24px; height: 24px; flex: none; accent-color: var(--forest); }
+[data-theme="dark"] .mcq-opt input[type=radio] { accent-color: var(--lime); }
+.form-error { color: var(--bad); font-weight: 700; }
+.howto summary { cursor: pointer; font-family: var(--display); text-transform: uppercase; }
 
-#toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(150%); background: var(--text); color: var(--bg);
-  padding: 12px 18px; border-radius: 12px; max-width: calc(100% - 32px); box-shadow: var(--shadow); transition: transform .25s, opacity .25s; z-index: 50;
-  opacity: 0; visibility: hidden; }
+/* ---------- toast ---------- */
+#toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(150%); background: var(--forest); color: var(--lime);
+  border: 2.5px solid var(--lime); font-weight: 700; padding: 12px 20px; border-radius: 99px; max-width: calc(100% - 32px);
+  box-shadow: 4px 4px 0 #000; transition: transform .25s, opacity .25s; z-index: 50; opacity: 0; visibility: hidden; }
 #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; visibility: visible; }
 
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .marquee-track { transform: none; }
+}
 @media (max-width: 700px) {
   body { font-size: 16px; }
   .manage-grid { grid-template-columns: 1fr; }
-  h1 { font-size: 1.35rem; }
   .statement-text { font-size: 1.1rem; }
   .actions .btn.big { flex: 1 1 100%; }
   .session-head { flex-wrap: wrap; }
-  .topnav button { padding: 8px 8px; }
+  .topnav button { padding: 6px 8px; font-size: .72rem; letter-spacing: .04em; }
+  .brand { font-size: .9rem; }
+  .card { padding: 16px; }
 }
 </style>
 </head>
@@ -194,7 +265,8 @@ legend { font-weight: 700; padding: 0 6px; }
  *              // a multi-word keyword needs every word to appear (any order).
  *         hint: "Shown when the answer is wrong.",
  *         followUps: [   // 1–3 follow-up questions about the same statement
- *           { question: "...", answer: "model answer", keywords: ["..."], hint: "..." }
+ *           { note: "short note shown BEFORE this question", question: "...",
+ *             answer: "model answer", keywords: ["..."], hint: "..." }
  *         ],
  *         mcq: { question: "...", options: ["A", "B", "C", "D"], answer: 0 }  // answer = index of correct option
  *       }
@@ -214,8 +286,8 @@ window.DEFAULT_DATA = {
           keywords: ["build|building|builds|design|run|running", "system|systems|pipeline|pipelines", "raw", "clean|reliable|trusted", "information|info|usable"],
           hint: "Think of the water treatment plant: dirty river water → plant → clean tap water.",
           followUps: [
-            { question: "What is the simple 4-step version of data engineering?", answer: "Get data → store it → prepare it → hand it over.", keywords: ["get|collect|ingest|take", "store|storage|keep", "prepare|clean|transform", "hand|serve|deliver|give"], hint: "Get … store … prepare … hand ___." },
-            { question: "In the big-picture analogy, what is data engineering compared to?", answer: "A water treatment plant for data.", keywords: ["water", "treatment|plant"], hint: "Dirty river water becomes clean tap water." }
+            { note: "Simple version of data engineering: get data → store it → prepare it → hand it over.", question: "What is the simple 4-step version of data engineering?", answer: "Get data → store it → prepare it → hand it over.", keywords: ["get|collect|ingest|take", "store|storage|keep", "prepare|clean|transform", "hand|serve|deliver|give"], hint: "Get … store … prepare … hand ___." },
+            { note: "Big picture: data engineering is like a water treatment plant for data — dirty river water (raw data) becomes clean tap water (useful information).", question: "In the big-picture analogy, what is data engineering compared to?", answer: "A water treatment plant for data.", keywords: ["water", "treatment|plant"], hint: "Dirty river water becomes clean tap water." }
           ],
           mcq: { question: "Which best defines data engineering?", options: ["Building and running systems that turn raw data into clean, reliable information", "Training machine learning models to predict outcomes", "Designing dashboards and KPIs for managers", "Running A/B tests on app layouts"], answer: 0 }
         },
@@ -225,8 +297,8 @@ window.DEFAULT_DATA = {
           keywords: ["warehouse|warehouses", "hadoop|mapreduce|google file system", "hype|big data", "lifecycle"],
           hint: "Memory trick: \"Warehouse → Hadoop → Hype → Lifecycle\".",
           followUps: [
-            { question: "Why did the term \"big data\" fade?", answer: "Tools became simple and cheap, so big data became normal.", keywords: ["simple|simpler|easy|easier|cheap|cheaper", "normal|common|standard|everyday"], hint: "The tools changed — and so big data stopped being special." },
-            { question: "In which year was Hadoop released?", answer: "2006", keywords: ["2006"], hint: "Google File System 2003, MapReduce 2004, then Hadoop two years later." }
+            { note: "Why \"big data\" faded: tools became simple and cheap, so big data became normal. \"Big data engineers\" became just data engineers.", question: "Why did the term \"big data\" fade?", answer: "Tools became simple and cheap, so big data became normal.", keywords: ["simple|simpler|easy|easier|cheap|cheaper", "normal|common|standard|everyday"], hint: "The tools changed — and so big data stopped being special." },
+            { note: "The big bang (early 2000s): Google File System 2003, MapReduce 2004, Hadoop 2006, plus AWS.", question: "In which year was Hadoop released?", answer: "2006", keywords: ["2006"], hint: "Google File System 2003, MapReduce 2004, then Hadoop two years later." }
           ],
           mcq: { question: "What happened during the 1980–2000 era?", options: ["Relational databases, SQL and data warehouses", "Hadoop and MapReduce were invented", "The big data hype", "The data lifecycle engineer emerged"], answer: 0 }
         },
@@ -236,8 +308,8 @@ window.DEFAULT_DATA = {
           keywords: ["pdpa|personal data protection", "2010", "2024", "breach|breaches", "officer|dpo", "rm1 million|1 million|rm1m|rm1"],
           hint: "Passed 2010, amended 2024. New duties: report ___ and appoint a ___. Max fine RM_ million.",
           followUps: [
-            { question: "What is the maximum PDPA fine?", answer: "RM1 million", keywords: ["rm1 million|1 million|rm1m|one million"], hint: "One ___ ringgit." },
-            { question: "Name one new duty added by the 2024 PDPA amendment.", answer: "Report data breaches, or appoint a data protection officer.", keywords: ["breach|breaches|officer|dpo"], hint: "One is about reporting incidents; the other is about appointing a person." }
+            { note: "PDPA penalty: fines of up to RM1 million.", question: "What is the maximum PDPA fine?", answer: "RM1 million", keywords: ["rm1 million|1 million|rm1m|one million"], hint: "One ___ ringgit." },
+            { note: "New PDPA duties (2024 amendment): report data breaches and appoint a data protection officer (DPO).", question: "Name one new duty added by the 2024 PDPA amendment.", answer: "Report data breaches, or appoint a data protection officer.", keywords: ["breach|breaches|officer|dpo"], hint: "One is about reporting incidents; the other is about appointing a person." }
           ],
           mcq: { question: "When was Malaysia's PDPA first passed?", options: ["2010", "2024", "2006", "2003"], answer: 0 }
         },
@@ -247,9 +319,9 @@ window.DEFAULT_DATA = {
           keywords: ["engineer|engineering", "kitchen|build|builds", "scientist|science", "cook|cooks|cooking", "upstream|first", "downstream"],
           hint: "Memory trick about a kitchen. Which comes first in the river: up___ or down___?",
           followUps: [
-            { question: "How much of their time do data scientists spend cleaning and preparing data?", answer: "70–80%", keywords: ["70", "80"], hint: "Between seventy and eighty percent." },
-            { question: "Is \"train a model to predict dropouts\" a DE or a DS task?", answer: "DS — data scientist (predicting).", keywords: ["ds|scientist|science"], hint: "Rule: predicting or experimenting = ?" },
-            { question: "Is \"schedule a nightly job and alert on failure\" a DE or a DS task?", answer: "DE — data engineer (moving/cleaning/storing data).", keywords: ["de|engineer|engineering"], hint: "Rule: moving, cleaning or storing data = ?" }
+            { note: "Data scientists spend 70–80% of their time cleaning and preparing data — work a data engineer should do for them.", question: "How much of their time do data scientists spend cleaning and preparing data?", answer: "70–80%", keywords: ["70", "80"], hint: "Between seventy and eighty percent." },
+            { note: "Rule of thumb: predicting or experimenting = DS (data scientist). Example: training a model to predict dropouts.", question: "Is \"train a model to predict dropouts\" a DE or a DS task?", answer: "DS — data scientist (predicting).", keywords: ["ds|scientist|science"], hint: "Rule: predicting or experimenting = ?" },
+            { note: "Rule of thumb: moving, cleaning or storing data = DE (data engineer). Example: scheduling a nightly job and alerting on failure.", question: "Is \"schedule a nightly job and alert on failure\" a DE or a DS task?", answer: "DE — data engineer (moving/cleaning/storing data).", keywords: ["de|engineer|engineering"], hint: "Rule: moving, cleaning or storing data = ?" }
           ],
           mcq: { question: "Which task belongs to a data engineer?", options: ["Convert dates into one format", "Train a model to predict dropouts", "Run an A/B test of two layouts", "Forecast next year's sales"], answer: 0 }
         },
@@ -259,9 +331,9 @@ window.DEFAULT_DATA = {
           keywords: ["generation|generate|generated", "storage|store", "ingestion|ingest", "transformation|transform", "serving|serve"],
           hint: "Memory trick: \"Good Students Ignore Tiring Sleep\".",
           followUps: [
-            { question: "Which lifecycle stage underpins (is the foundation of) all the others?", answer: "Storage", keywords: ["storage|store"], hint: "Exam trap! It's used at every stage." },
-            { question: "Shopee order: at which stage does the seller see a sales dashboard?", answer: "Serving", keywords: ["serving|serve"], hint: "The final stage — giving data to users." },
-            { question: "What is the memory trick for the five stages?", answer: "Good Students Ignore Tiring Sleep", keywords: ["good", "students|student", "ignore", "tiring", "sleep"], hint: "G… S… I… T… S…" }
+            { note: "Exam trap: Storage is the foundation — it underpins all the other stages and is used at every stage.", question: "Which lifecycle stage underpins (is the foundation of) all the others?", answer: "Storage", keywords: ["storage|store"], hint: "Exam trap! It's used at every stage." },
+            { note: "Shopee example: click Buy (generation) → order pulled in (ingestion) → kept in a database (storage) → totals calculated (transformation) → seller sees a sales dashboard (serving).", question: "Shopee order: at which stage does the seller see a sales dashboard?", answer: "Serving", keywords: ["serving|serve"], hint: "The final stage — giving data to users." },
+            { note: "Memory trick for the 5 stages: \"Good Students Ignore Tiring Sleep\" = Generation, Storage, Ingestion, Transformation, Serving.", question: "What is the memory trick for the five stages?", answer: "Good Students Ignore Tiring Sleep", keywords: ["good", "students|student", "ignore", "tiring", "sleep"], hint: "G… S… I… T… S…" }
           ],
           mcq: { question: "Which lifecycle stage underpins all the others?", options: ["Storage", "Ingestion", "Serving", "Generation"], answer: 0 }
         },
@@ -271,8 +343,8 @@ window.DEFAULT_DATA = {
           keywords: ["security", "orchestration", "software", "management", "dataops", "architecture"],
           hint: "Memory trick: \"SOS + 3 D's\" — S, O, S + Data ___, Data___, Data ___.",
           followUps: [
-            { question: "What does orchestration mean?", answer: "Scheduling jobs in the right order.", keywords: ["schedule|scheduling|scheduler", "order|sequence"], hint: "Like a conductor: when each job runs, and in what ___." },
-            { question: "Why are they called \"undercurrents\"?", answer: "Like currents under the sea, you can't see them but they steer everything.", keywords: ["see|visible|invisible|hidden|unseen", "steer|guide|affect|influence|control|drive"], hint: "Currents under the sea…" }
+            { note: "Orchestration = scheduling jobs in the right order.", question: "What does orchestration mean?", answer: "Scheduling jobs in the right order.", keywords: ["schedule|scheduling|scheduler", "order|sequence"], hint: "Like a conductor: when each job runs, and in what ___." },
+            { note: "Undercurrents are like currents under the sea: you can't see them, but they steer everything. A perfect pipeline still fails if it isn't secure or monitored.", question: "Why are they called \"undercurrents\"?", answer: "Like currents under the sea, you can't see them but they steer everything.", keywords: ["see|visible|invisible|hidden|unseen", "steer|guide|affect|influence|control|drive"], hint: "Currents under the sea…" }
           ],
           mcq: { question: "Which is NOT one of the six undercurrents?", options: ["Serving", "Security", "Orchestration", "DataOps"], answer: 0 }
         },
@@ -282,8 +354,8 @@ window.DEFAULT_DATA = {
           keywords: ["15841|15 841", "excel|xls|spreadsheet", "65536|65 536", "rows|row"],
           hint: "15,8__ cases lost. Old Excel .XLS limit = 65,5__ rows.",
           followUps: [
-            { question: "What simple check would have caught the problem?", answer: "A row-count check plus an alert.", keywords: ["count|row count|rows", "check|alert|monitor|monitoring"], hint: "Count the ___ and raise an ___." },
-            { question: "What is the lesson of this case?", answer: "Undercurrents matter — never run a pipeline on a spreadsheet.", keywords: ["undercurrent|undercurrents|spreadsheet|spreadsheets|monitoring|monitor"], hint: "Which hidden things steer every pipeline?" }
+            { note: "A simple row-count check plus an alert would have caught the missing COVID cases.", question: "What simple check would have caught the problem?", answer: "A row-count check plus an alert.", keywords: ["count|row count|rows", "check|alert|monitor|monitoring"], hint: "Count the ___ and raise an ___." },
+            { note: "Lesson of the England COVID case: undercurrents matter — never run a pipeline on a spreadsheet.", question: "What is the lesson of this case?", answer: "Undercurrents matter — never run a pipeline on a spreadsheet.", keywords: ["undercurrent|undercurrents|spreadsheet|spreadsheets|monitoring|monitor"], hint: "Which hidden things steer every pipeline?" }
           ],
           mcq: { question: "How many rows can an old Excel .XLS file hold?", options: ["65,536", "1,048,576", "15,841", "10,000"], answer: 0 }
         },
@@ -293,8 +365,8 @@ window.DEFAULT_DATA = {
           keywords: ["cost", "agility|agile", "scalability|scalable", "simplicity|simple", "reuse|reusability", "interoperability"],
           hint: "Memory trick: \"CASS RI\".",
           followUps: [
-            { question: "What does a small start-up care about most?", answer: "Cost and agility.", keywords: ["cost", "agility|agile"], hint: "Little money, needs to move fast." },
-            { question: "What does a national bank care about most?", answer: "Security, scalability and reliability.", keywords: ["security|secure", "scalability|scale|scalable", "reliability|reliable"], hint: "Huge volume, lots of money at stake, must never fail." }
+            { note: "A small start-up cares most about cost and agility.", question: "What does a small start-up care about most?", answer: "Cost and agility.", keywords: ["cost", "agility|agile"], hint: "Little money, needs to move fast." },
+            { note: "A national bank cares most about security, scalability and reliability.", question: "What does a national bank care about most?", answer: "Security, scalability and reliability.", keywords: ["security|secure", "scalability|scale|scalable", "reliability|reliable"], hint: "Huge volume, lots of money at stake, must never fail." }
           ],
           mcq: { question: "Which pair does a small start-up care about most?", options: ["Cost and agility", "Security and reliability", "Reuse and interoperability", "Scalability and governance"], answer: 0 }
         },
@@ -304,8 +376,8 @@ window.DEFAULT_DATA = {
           keywords: ["sql", "python", "jvm|java|scala", "bash"],
           hint: "Four languages: the common one, the bridge, the JVM one, and the shell one.",
           followUps: [
-            { question: "What does it mean that SQL is declarative?", answer: "You say what you want, not how.", keywords: ["what", "how"], hint: "You describe the result, not the steps." },
-            { question: "Through which tools did SQL make its comeback?", answer: "Hive, Spark SQL and cloud warehouses.", keywords: ["hive", "spark", "cloud|warehouse|warehouses"], hint: "H___, S___ SQL and c___ warehouses." }
+            { note: "SQL is declarative: you say what you want, not how.", question: "What does it mean that SQL is declarative?", answer: "You say what you want, not how.", keywords: ["what", "how"], hint: "You describe the result, not the steps." },
+            { note: "SQL's comeback: born in the 1970s → pushed aside by MapReduce code → back through Hive, Spark SQL and cloud warehouses.", question: "Through which tools did SQL make its comeback?", answer: "Hive, Spark SQL and cloud warehouses.", keywords: ["hive", "spark", "cloud|warehouse|warehouses"], hint: "H___, S___ SQL and c___ warehouses." }
           ],
           mcq: { question: "Which language is called \"the bridge to data science\"?", options: ["Python", "SQL", "Bash", "Scala"], answer: 0 }
         },
@@ -315,7 +387,7 @@ window.DEFAULT_DATA = {
           keywords: ["warehouse", "hadoop|lake", "incremental", "24", "1 hour|one hour|hour"],
           hint: "Three steps: warehouse → H___ lake → i___ platform. Freshness: 2_ hours → under _ hour.",
           followUps: [
-            { question: "What is the main lesson of the Uber case?", answer: "Each fix revealed the next problem.", keywords: ["fix|fixes|solution|solving|solved", "next|new|another", "problem|problems|issue"], hint: "Every time they solved something…" }
+            { note: "Uber's lesson: each fix revealed the next problem.", question: "What is the main lesson of the Uber case?", answer: "Each fix revealed the next problem.", keywords: ["fix|fixes|solution|solving|solved", "next|new|another", "problem|problems|issue"], hint: "Every time they solved something…" }
           ],
           mcq: { question: "Uber's data freshness improved from 24+ hours to…", options: ["Under 1 hour", "Under 12 hours", "Exactly 6 hours", "Under 1 week"], answer: 0 }
         },
@@ -325,7 +397,7 @@ window.DEFAULT_DATA = {
           keywords: ["csv", "github", "2021", "epidemic", "mysejahtera", "vaccination|vaccine", "static"],
           hint: "Daily ___ files on G___ from 2021. Four folders: e___, m___, v___, s___.",
           followUps: [
-            { question: "What are the key undercurrents in the KKM case?", answer: "De-identification, documentation and automation.", keywords: ["identification|deidentification|anonymisation|anonymization|anonymise", "documentation|document|documented", "automation|automate|automated"], hint: "Protect identities, explain the data, run it automatically." }
+            { note: "Key undercurrents in the KKM case: de-identification, documentation and automation.", question: "What are the key undercurrents in the KKM case?", answer: "De-identification, documentation and automation.", keywords: ["identification|deidentification|anonymisation|anonymization|anonymise", "documentation|document|documented", "automation|automate|automated"], hint: "Protect identities, explain the data, run it automatically." }
           ],
           mcq: { question: "Where did KKM publish its daily COVID-19 CSV files?", options: ["GitHub", "Facebook", "Dropbox", "Google Drive"], answer: 0 }
         },
@@ -335,8 +407,8 @@ window.DEFAULT_DATA = {
           keywords: ["spreadsheet", "simpler|simple", "airflow", "kafka|streaming", "wrong|flu"],
           hint: "Five hooks: spreadsheet, simpler, Airflow, Kafka, and big data being wrong.",
           followUps: [
-            { question: "Which company built Kafka?", answer: "LinkedIn", keywords: ["linkedin"], hint: "The professional social network." },
-            { question: "Which company built Airflow (a scheduler) and gave it away free?", answer: "Airbnb", keywords: ["airbnb"], hint: "A home-sharing company." }
+            { note: "LinkedIn built Kafka — the start of the move from batch to streaming.", question: "Which company built Kafka?", answer: "LinkedIn", keywords: ["linkedin"], hint: "The professional social network." },
+            { note: "Airbnb built Airflow (a scheduler) and gave it away free.", question: "Which company built Airflow (a scheduler) and gave it away free?", answer: "Airbnb", keywords: ["airbnb"], hint: "A home-sharing company." }
           ],
           mcq: { question: "Which case teaches \"big data can still be wrong\"?", options: ["Google Flu Trends", "Prime Video", "Airbnb (Airflow)", "LinkedIn (Kafka)"], answer: 0 }
         }
@@ -352,8 +424,8 @@ window.DEFAULT_DATA = {
           keywords: ["usable|useful", "raw", "prepared|unprepared", "information", "organised|organized|arranged", "meaning|meaningful"],
           hint: "Big idea: having data ≠ having ___ data. Then define raw data vs information.",
           followUps: [
-            { question: "A university has thousands of student records but can't find the right one when needed. Does it really have useful data?", answer: "No.", keywords: ["no|not"], hint: "Data must be usable." },
-            { question: "Define \"information\".", answer: "Data that is organised and has meaning.", keywords: ["organised|organized|arranged", "meaning|meaningful"], hint: "Two words: o___ and m___." }
+            { note: "If a university has thousands of student records but can't find the right one when needed, it does NOT really have useful data. Data must be usable.", question: "A university has thousands of student records but can't find the right one when needed. Does it really have useful data?", answer: "No.", keywords: ["no|not"], hint: "Data must be usable." },
+            { note: "Information = data that is organised and has meaning.", question: "Define \"information\".", answer: "Data that is organised and has meaning.", keywords: ["organised|organized|arranged", "meaning|meaningful"], hint: "Two words: o___ and m___." }
           ],
           mcq: { question: "Raw data is…", options: ["Original records, not yet prepared", "Data that is organised and meaningful", "A dashboard for managers", "A machine learning model"], answer: 0 }
         },
@@ -363,8 +435,8 @@ window.DEFAULT_DATA = {
           keywords: ["decision|decisions", "improved|improve|services|service", "connected|connect", "innovation|innovate"],
           hint: "Memory trick: \"DICE\".",
           followUps: [
-            { question: "How does good data help a bank?", answer: "Accurate transactions and spotting fraud.", keywords: ["accurate|accuracy|transaction|transactions", "fraud"], hint: "Getting transactions right, and catching criminals." },
-            { question: "What does \"enabling innovation\" mean?", answer: "Analytics and AI need good data first.", keywords: ["analytics|ai|machine learning|ml", "good|clean|quality|trusted"], hint: "No foundation, no AI." }
+            { note: "Bank: good data means accurate transactions and spotting fraud.", question: "How does good data help a bank?", answer: "Accurate transactions and spotting fraud.", keywords: ["accurate|accuracy|transaction|transactions", "fraud"], hint: "Getting transactions right, and catching criminals." },
+            { note: "Enabling innovation: analytics and AI need good data first.", question: "What does \"enabling innovation\" mean?", answer: "Analytics and AI need good data first.", keywords: ["analytics|ai|machine learning|ml", "good|clean|quality|trusted"], hint: "No foundation, no AI." }
           ],
           mcq: { question: "In \"DICE\", what does the C stand for?", options: ["Connected information", "Cost", "Cloud computing", "Compliance"], answer: 0 }
         },
@@ -374,9 +446,9 @@ window.DEFAULT_DATA = {
           keywords: ["people", "rules", "processes|process", "technology|tech", "connected|connect|linked"],
           hint: "Five things joined together: p___ + data + r___ + p___ + t___.",
           followUps: [
-            { question: "In the restaurant analogy, who are the farmers?", answer: "Data producers.", keywords: ["producer|producers|produce"], hint: "They create the raw ingredients." },
-            { question: "In the restaurant analogy, what is the kitchen?", answer: "Data engineering work.", keywords: ["engineering|engineer"], hint: "Where things are collected, checked and prepared." },
-            { question: "Can fancy technology fix unclear responsibility or untrusted data?", answer: "No — fancy technology can't fix unclear responsibility or untrusted data.", keywords: ["no|not|cannot|cant"], hint: "That's the key idea of the ecosystem." }
+            { note: "Restaurant analogy: farmers = data producers (people, apps and devices that create data).", question: "In the restaurant analogy, who are the farmers?", answer: "Data producers.", keywords: ["producer|producers|produce"], hint: "They create the raw ingredients." },
+            { note: "Restaurant analogy: the kitchen = data engineering work (collect, organise, check, prepare).", question: "In the restaurant analogy, what is the kitchen?", answer: "Data engineering work.", keywords: ["engineering|engineer"], hint: "Where things are collected, checked and prepared." },
+            { note: "Key idea: fancy technology can't fix unclear responsibility or untrusted data.", question: "Can fancy technology fix unclear responsibility or untrusted data?", answer: "No — fancy technology can't fix unclear responsibility or untrusted data.", keywords: ["no|not|cannot|cant"], hint: "That's the key idea of the ecosystem." }
           ],
           mcq: { question: "In the restaurant analogy, the customers represent…", options: ["Data users", "Data producers", "Data sources", "Rules and responsibilities"], answer: 0 }
         },
@@ -386,8 +458,8 @@ window.DEFAULT_DATA = {
           keywords: ["producers|producer", "sources|source", "engineering", "rules|responsibilities|responsibility", "users|user"],
           hint: "Restaurant: farmers, ingredients, kitchen, food safety rules, customers.",
           followUps: [
-            { question: "What are \"data sources\"?", answer: "Records, forms, documents and system data.", keywords: ["records|forms|documents|system"], hint: "The ingredients in the store room." },
-            { question: "What do \"rules and responsibilities\" cover?", answer: "Ownership, access and protection.", keywords: ["ownership|owner|own", "access", "protection|protect|security"], hint: "Who owns it, who can get in, how it's kept safe." }
+            { note: "Data sources = records, forms, documents and system data (the ingredients in the store room).", question: "What are \"data sources\"?", answer: "Records, forms, documents and system data.", keywords: ["records|forms|documents|system"], hint: "The ingredients in the store room." },
+            { note: "Rules and responsibilities = ownership, access and protection (the food safety rules).", question: "What do \"rules and responsibilities\" cover?", answer: "Ownership, access and protection.", keywords: ["ownership|owner|own", "access", "protection|protect|security"], hint: "Who owns it, who can get in, how it's kept safe." }
           ],
           mcq: { question: "Which element is \"people, apps and devices that create data\"?", options: ["Data producers", "Data users", "Data sources", "Data engineering work"], answer: 0 }
         },
@@ -397,7 +469,7 @@ window.DEFAULT_DATA = {
           keywords: ["journey", "sequence|steps|order|stages", "ecosystem", "relationships|relationship|connections", "who"],
           hint: "One is a sequence (what happens?), the other is relationships (who…?).",
           followUps: [
-            { question: "Which question does the data ecosystem ask?", answer: "Who makes the data useful?", keywords: ["who", "useful|usable"], hint: "It starts with \"Who…\"." }
+            { note: "The ecosystem is about relationships. It asks: \"Who makes the data useful?\"", question: "Which question does the data ecosystem ask?", answer: "Who makes the data useful?", keywords: ["who", "useful|usable"], hint: "It starts with \"Who…\"." }
           ],
           mcq: { question: "Which question does the data journey ask?", options: ["What happens to the data?", "Who makes the data useful?", "Who owns the data?", "How much does the data cost?"], answer: 0 }
         },
@@ -407,8 +479,8 @@ window.DEFAULT_DATA = {
           keywords: ["engineer", "build|builds|road", "analyst", "explain|explains|happened|past", "scientist", "predict|predicts|future|forecast"],
           hint: "Memory trick: Past, Present, Future — who builds, who explains, who predicts?",
           followUps: [
-            { question: "Who decides who can access data and how it's used?", answer: "The data owner.", keywords: ["owner"], hint: "Data ___." },
-            { question: "What does a database administrator do?", answer: "Keeps the database running, fast and secure.", keywords: ["running|run|available", "fast|performance|speed", "secure|security|safe"], hint: "Three things: r___, f___, s___." }
+            { note: "Data owner: decides who can access data and how it's used.", question: "Who decides who can access data and how it's used?", answer: "The data owner.", keywords: ["owner"], hint: "Data ___." },
+            { note: "Database administrator: keeps the database running, fast and secure.", question: "What does a database administrator do?", answer: "Keeps the database running, fast and secure.", keywords: ["running|run|available", "fast|performance|speed", "secure|security|safe"], hint: "Three things: r___, f___, s___." }
           ],
           mcq: { question: "Who usually builds business dashboards?", options: ["Data analyst", "Data engineer", "Database administrator", "Software engineer"], answer: 0 }
         },
@@ -418,7 +490,7 @@ window.DEFAULT_DATA = {
           keywords: ["upstream", "architect|software|devops|sre", "downstream", "scientist|analyst|ml|machine learning"],
           hint: "Think of a river: who gives to the DE (up), who takes from the DE (down)?",
           followUps: [
-            { question: "What is the difference between an external-facing and an internal-facing data engineer?", answer: "External-facing serves public users (many users, stricter security); internal-facing serves the company (reports, dashboards, ML).", keywords: ["external", "public|users|customers", "internal", "company|organisation|organization|business|staff"], hint: "Facing outward to the ___, or inward to the ___." }
+            { note: "External-facing DE serves public users (social media, e-commerce, IoT): many users at once, stricter security. Internal-facing DE serves the company (reports, dashboards, ML). Many do both.", question: "What is the difference between an external-facing and an internal-facing data engineer?", answer: "External-facing serves public users (many users, stricter security); internal-facing serves the company (reports, dashboards, ML).", keywords: ["external", "public|users|customers", "internal", "company|organisation|organization|business|staff"], hint: "Facing outward to the ___, or inward to the ___." }
           ],
           mcq: { question: "Which role is DOWNSTREAM of the data engineer?", options: ["ML engineer", "Data architect", "Software engineer", "DevOps/SRE"], answer: 0 }
         },
@@ -428,9 +500,9 @@ window.DEFAULT_DATA = {
           keywords: ["starting|start", "scaling|scale", "leading|lead", "bicycle|bike|cycling"],
           hint: "Memory trick: learning to ride a bicycle. S___, S___, L___.",
           followUps: [
-            { question: "What does data maturity depend on?", answer: "How data is used — NOT company age or size.", keywords: ["used|use|uses|usage|using"], hint: "Exam trap: not age, not size…" },
-            { question: "What is the danger at the starting stage?", answer: "Jumping to ML too early.", keywords: ["ml|machine learning|ai", "early|soon|fast"], hint: "Taking off the training wheels too soon." },
-            { question: "What is the danger at the scaling stage?", answer: "Chasing trendy tools.", keywords: ["trendy|trend|trends|fashionable|new|shiny", "tools|tool|technology"], hint: "Wanting the newest, coolest ___." }
+            { note: "Exam trap: data maturity depends on how data is used, NOT on company age or size.", question: "What does data maturity depend on?", answer: "How data is used — NOT company age or size.", keywords: ["used|use|uses|usage|using"], hint: "Exam trap: not age, not size…" },
+            { note: "Danger at the starting stage: jumping to ML too early.", question: "What is the danger at the starting stage?", answer: "Jumping to ML too early.", keywords: ["ml|machine learning|ai", "early|soon|fast"], hint: "Taking off the training wheels too soon." },
+            { note: "Danger at the scaling stage: chasing trendy tools.", question: "What is the danger at the scaling stage?", answer: "Chasing trendy tools.", keywords: ["trendy|trend|trends|fashionable|new|shiny", "tools|tool|technology"], hint: "Wanting the newest, coolest ___." }
           ],
           mcq: { question: "A young start-up can be more data-mature than a 100-year-old company because maturity depends on…", options: ["How data is used", "Company age", "Company size", "Number of employees"], answer: 0 }
         },
@@ -440,8 +512,8 @@ window.DEFAULT_DATA = {
           keywords: ["generated|generate|generation", "collected|collect|collection", "organised|organized|organise|organize", "checked|check|prepared|prepare", "available|availability", "used|use|usage"],
           hint: "Memory trick: \"Go Collect Our Clean Meal, Use it\".",
           followUps: [
-            { question: "Course registration example: what happens at the \"organised\" stage?", answer: "It is linked to your student record.", keywords: ["link|linked|links|connect|connected|match", "record|records"], hint: "The course you picked gets attached to your ___." },
-            { question: "How many stages are in the Topic 3 lifecycle vs the Topic 5 journey?", answer: "Lifecycle has 5 stages (engineer's part); journey has 6 stages (whole organisation).", keywords: ["5|five", "6|six"], hint: "Don't mix them up: one is 5, one is 6." }
+            { note: "Course registration: you pick a course (generated) → the system records it (collected) → it is linked to your student record (organised) → the university checks it (checked) → lecturers and admin can see it (made available) → class lists are produced (used).", question: "Course registration example: what happens at the \"organised\" stage?", answer: "It is linked to your student record.", keywords: ["link|linked|links|connect|connected|match", "record|records"], hint: "The course you picked gets attached to your ___." },
+            { note: "Don't mix up: the Topic 3 lifecycle has 5 stages (the engineer's part); the Topic 5 journey has 6 stages (the whole organisation).", question: "How many stages are in the Topic 3 lifecycle vs the Topic 5 journey?", answer: "Lifecycle has 5 stages (engineer's part); journey has 6 stages (whole organisation).", keywords: ["5|five", "6|six"], hint: "Don't mix them up: one is 5, one is 6." }
           ],
           mcq: { question: "Which journey stage comes right after \"Collected\"?", options: ["Organised", "Used", "Made available", "Generated"], answer: 0 }
         },
@@ -451,8 +523,8 @@ window.DEFAULT_DATA = {
           keywords: ["quality", "integration|integrate", "responsibility|ownership", "privacy|security", "timeliness|timely|late", "resources|skills"],
           hint: "Memory trick: \"Quiet Interns Rarely Push The Rules\".",
           followUps: [
-            { question: "Which challenge is \"departments record things differently\"?", answer: "Integration.", keywords: ["integration|integrate"], hint: "Joining data from different places." },
-            { question: "Does more data always mean better information?", answer: "No — more data ≠ better information.", keywords: ["no|not"], hint: "Remember the \"≠\"." }
+            { note: "Integration challenge: departments record things differently.", question: "Which challenge is \"departments record things differently\"?", answer: "Integration.", keywords: ["integration|integrate"], hint: "Joining data from different places." },
+            { note: "Remember: more data ≠ better information.", question: "Does more data always mean better information?", answer: "No — more data ≠ better information.", keywords: ["no|not"], hint: "Remember the \"≠\"." }
           ],
           mcq: { question: "\"Nobody knows who owns the data\" is which challenge?", options: ["Responsibility", "Quality", "Timeliness", "Integration"], answer: 0 }
         },
@@ -462,7 +534,7 @@ window.DEFAULT_DATA = {
           keywords: ["collect|need", "purpose", "protect|protection|secure", "access|authorised|authorized", "fix|correct|explain"],
           hint: "Collect…, purpose…, protect…, access…, fix & explain.",
           followUps: [
-            { question: "How much data should you collect?", answer: "Only what you need.", keywords: ["only|minimum|necessary", "need|needed"], hint: "Not everything — just…" }
+            { note: "Rule 1 of responsible data use: collect only what you need.", question: "How much data should you collect?", answer: "Only what you need.", keywords: ["only|minimum|necessary", "need|needed"], hint: "Not everything — just…" }
           ],
           mcq: { question: "Which is a rule of responsible data use?", options: ["Give access only to authorised people", "Collect as much data as possible", "Keep wrong data to avoid changes", "Share data freely with everyone"], answer: 0 }
         },
@@ -472,9 +544,9 @@ window.DEFAULT_DATA = {
           keywords: ["data gov my|open data|portal", "ministries|ministry|agencies|agency|government", "citizens|students|researchers|developers|businesses|public", "datasets|dashboards|api"],
           hint: "Ask: who produces it, who uses it, how is it delivered?",
           followUps: [
-            { question: "Name one concern for data.gov.my.", answer: "Accuracy, timeliness, metadata, licensing, privacy or accountability.", keywords: ["accuracy|accurate|timeliness|timely|metadata|licensing|license|licence|privacy|accountability"], hint: "Six concerns: a___, t___, m___, l___, p___, a___." },
-            { question: "Which Malaysian case raises privacy questions because of personalisation?", answer: "Astro", keywords: ["astro"], hint: "A TV / media company." },
-            { question: "Which Malaysian case connects millions of students and teachers?", answer: "DELIMa", keywords: ["delima"], hint: "The Ministry of Education's digital learning platform." }
+            { note: "data.gov.my concerns: accuracy, timeliness, metadata, licensing, privacy and accountability.", question: "Name one concern for data.gov.my.", answer: "Accuracy, timeliness, metadata, licensing, privacy or accountability.", keywords: ["accuracy|accurate|timeliness|timely|metadata|licensing|license|licence|privacy|accountability"], hint: "Six concerns: a___, t___, m___, l___, p___, a___." },
+            { note: "Astro uses customer data for personalisation, which raises privacy questions.", question: "Which Malaysian case raises privacy questions because of personalisation?", answer: "Astro", keywords: ["astro"], hint: "A TV / media company." },
+            { note: "DELIMa connects millions of students and teachers.", question: "Which Malaysian case connects millions of students and teachers?", answer: "DELIMa", keywords: ["delima"], hint: "The Ministry of Education's digital learning platform." }
           ],
           mcq: { question: "What is the main Malaysian case study in Topic 5?", options: ["data.gov.my", "Uber", "KKM COVID-19 open data", "Google Flu Trends"], answer: 0 }
         }
@@ -527,7 +599,7 @@ const Store = (() => {
           hint: String(s.hint || ""),
           followUps: (Array.isArray(s.followUps) ? s.followUps : []).slice(0, 3)
             .filter(f => f && f.question)
-            .map(f => ({ question: String(f.question), answer: String(f.answer || ""), keywords: normKeywords(f.keywords), hint: String(f.hint || "") })),
+            .map(f => ({ note: String(f.note || f.answer || ""), question: String(f.question), answer: String(f.answer || ""), keywords: normKeywords(f.keywords), hint: String(f.hint || "") })),
           mcq: mcq && mcq.options.length === 4 && mcq.question ? mcq : null
         });
       });
@@ -554,14 +626,16 @@ const Store = (() => {
     const p = progress[id] || {};
     const scores = p.scores || {};
     if (!t || !t.statements.length) return { pct: 0, mastered: 0, total: 0, quizBest: p.quizBest || 0, studied: false };
+    const mset = p.mastered || {};
     let sum = 0, mastered = 0;
-    t.statements.forEach(s => { const v = scores[s.id] || 0; sum += v; if (v > 0) mastered++; });
+    t.statements.forEach(s => { const v = scores[s.id] || 0; sum += v; if (mset[s.id] !== undefined ? mset[s.id] : v > 0) mastered++; });
     return { pct: Math.round(sum / t.statements.length), mastered, total: t.statements.length, quizBest: p.quizBest || 0, studied: !!p.lastStudied };
   }
 
-  function recordStudy(topicId, scoreMap) {
+  function recordStudy(topicId, scoreMap, masteredMap) {
     const p = progress[topicId] || (progress[topicId] = {});
     p.scores = Object.assign({}, p.scores || {}, scoreMap);
+    p.mastered = Object.assign({}, p.mastered || {}, masteredMap || {});
     p.lastStudied = Date.now();
     saveProgress();
   }
@@ -658,10 +732,17 @@ const Checker = (() => {
   return { normalize, tokens, levenshtein, check };
 })();
 
-/* Memorisation mode: read → hide & test → check → follow-ups → next. */
+/*
+ * Memorisation mode. EVERY question (main statement or follow-up) runs the same cycle:
+ *   A. NOTE   – show the note (statement text / follow-up note). No typing possible.
+ *   B. ANSWER – note hidden; question + empty answer box.
+ *   C. CHECK  – keyword check; correct → compare with note; close/wrong → hint, max 3 attempts.
+ *   D. NEXT   – next follow-up's NOTE, or next statement's NOTE. Never a question without its note first.
+ *   E. END    – statements marked "needs repeat" are replayed (full cycle, starting with the note).
+ */
 const Study = (() => {
   const MAX_ATTEMPTS = 3;
-  const ATTEMPT_SCORE = [100, 60, 30]; // 1st, 2nd, 3rd attempt; fail = 0
+  const ATTEMPT_SCORE = [100, 60, 30]; // 1st, 2nd, 3rd attempt; failed = 0
   let S = null;
 
   const GRADE = {
@@ -676,14 +757,15 @@ const Study = (() => {
     S = {
       topic,
       queue: topic.statements.map(s => ({ sid: s.id, repeat: false })),
-      qi: 0,
-      results: {},      // sid -> { score, attempts, status:'mastered'|'repeat', repeatPassed, fu: [] }
-      phase: "read",    // read | test | fu
-      fuIndex: 0,
+      qi: 0,            // index in queue
+      step: 0,          // 0 = main statement, 1..n = follow-up n
+      phase: "note",    // note | answer
       attempt: 0,
       resolved: null,   // null | 'pass' | 'fail'
-      last: null,       // last check result
-      draft: ""
+      last: null,
+      draft: "",
+      results: {},      // sid -> { steps: [{score, attempts, passed}], needsRepeat, repeatOk }
+      finished: false
     };
     App.show("study");
     render();
@@ -692,45 +774,69 @@ const Study = (() => {
   function isActive() { return !!S && !S.finished; }
   function stop() { S = null; }
 
+  /* ---------- helpers ---------- */
   const cur = () => S.queue[S.qi];
-  const stmt = () => S.topic.statements.find(s => s.id === cur().sid);
-  const fu = () => stmt().followUps[S.fuIndex];
-  const activeKeywords = () => (S.phase === "fu" ? fu().keywords : stmt().keywords);
+  const stmtOf = sid => S.topic.statements.find(s => s.id === sid);
+  const stmt = () => stmtOf(cur().sid);
+  const stepsOf = sid => 1 + stmtOf(sid).followUps.length;
+  const isFu = () => S.step > 0;
+  const fu = () => stmt().followUps[S.step - 1];
 
+  /* The question currently being worked on, in one shape for main + follow-up. */
+  function q() {
+    const st = stmt();
+    if (!isFu()) return {
+      note: st.text,
+      prompt: "Write this statement in your own words — what you remember and understand.",
+      keywords: st.keywords, hint: st.hint, answer: st.text
+    };
+    const f = fu();
+    return { note: f.note || f.answer, prompt: f.question, keywords: f.keywords, hint: f.hint, answer: f.answer || f.note };
+  }
+
+  function noteNumbers() {
+    let before = 0, total = 0;
+    S.queue.forEach((it, i) => { const n = stepsOf(it.sid); if (i < S.qi) before += n; total += n; });
+    return { x: before + S.step + 1, y: total };
+  }
+
+  /* ---------- rendering ---------- */
   function render() {
-    const root = App.root();
     const st = stmt();
     const item = cur();
-    const firstRound = S.topic.statements.length;
-    const totalItems = S.queue.length;
-    const pct = Math.round((S.qi / totalItems) * 100);
-    let body = "";
+    const { x, y } = noteNumbers();
+    const pct = Math.round(((x - 1) / y) * 100);
+    const nStmts = S.topic.statements.length;
+    const stmtPos = S.topic.statements.indexOf(st) + 1;
+    const where = isFu()
+      ? `Statement ${stmtPos} of ${nStmts} · Follow-up ${S.step} of ${st.followUps.length}`
+      : `Statement ${stmtPos} of ${nStmts} · Main statement`;
+    const Q = q();
+    let body;
 
-    if (S.phase === "read") {
+    if (S.phase === "note") {
       body = `
-        <div class="card statement-card">
-          <p class="label">Read and memorise this statement</p>
-          <p class="statement-text">${App.esc(st.text)}</p>
+        <div class="card note-card">
+          <p class="label">📘 Note ${x} of ${y}${isFu() ? " · for the next follow-up question" : ""}</p>
+          <p class="statement-text">${App.esc(Q.note)}</p>
         </div>
-        <div class="actions"><button class="btn primary big" id="btnHide" autofocus>🙈 Hide &amp; Test</button></div>`;
+        <p class="muted small">Read carefully. The note will be hidden when you continue.</p>
+        <div class="actions"><button class="btn primary big" id="btnRead">✅ I've read it, test me</button></div>`;
     } else {
-      const isFu = S.phase === "fu";
-      const q = isFu
-        ? `<div class="card question-card">
-             <p class="label">Follow-up question ${S.fuIndex + 1} of ${st.followUps.length}</p>
-             <p class="statement-text">${App.esc(fu().question)}</p>
-           </div>`
-        : `<div class="card hidden-card" aria-label="Statement hidden">
-             <p class="label">🔒 Statement hidden</p>
-             <p class="muted">Write what you remember / understand, in your own words.</p>
-           </div>`;
       const done = !!S.resolved;
-      body = `${q}
+      body = `
+        <div class="card hidden-card" aria-label="Note hidden">
+          <p class="label">🔒 Note ${x} of ${y} is hidden</p>
+        </div>
+        <div class="card question-card">
+          <p class="label">${isFu() ? `Follow-up question ${S.step} of ${st.followUps.length}` : "Question"}</p>
+          <p class="statement-text">${App.esc(Q.prompt)}</p>
+        </div>
         <label class="label" for="answer">Your answer <span class="muted">(Ctrl+Enter to check)</span></label>
         <textarea id="answer" class="answer-box" rows="6" ${done ? "disabled" : ""}
           placeholder="Type your answer here…">${App.esc(S.draft)}</textarea>
         <p class="attempts" aria-live="polite">Attempt ${Math.min(S.attempt + (done ? 0 : 1), MAX_ATTEMPTS)} of ${MAX_ATTEMPTS}</p>
-        ${feedbackHTML()}
+        ${feedbackHTML(Q)}
         <div class="actions">
           ${done
             ? `<button class="btn primary big" id="btnNext">${nextLabel()} →</button>`
@@ -739,31 +845,29 @@ const Study = (() => {
         </div>`;
     }
 
-    root.innerHTML = `
+    App.root().innerHTML = `
       <section class="study">
         <div class="session-head">
           <div>
             <p class="eyebrow">${App.esc(S.topic.name)}</p>
-            <h1>Statement ${Math.min(S.qi + 1, totalItems)} of ${totalItems}
-              ${item.repeat ? '<span class="badge warn">Repeat round</span>' : ""}</h1>
+            <h1>Note ${x} of ${y} ${item.repeat ? '<span class="badge warn">Repeat round</span>' : ""}</h1>
+            <p class="muted small">${where} · ${S.phase === "note" ? "Step 1: read" : "Step 2: answer"}</p>
           </div>
           <button class="btn ghost" data-nav="home">✕ Quit</button>
         </div>
         <div class="progress" role="progressbar" aria-label="Session progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><div style="width:${pct}%"></div></div>
-        <p class="muted small">${firstRound} statements${totalItems > firstRound ? ` + ${totalItems - firstRound} to repeat` : ""}</p>
         ${body}
       </section>`;
-
     bind();
   }
 
   function nextLabel() {
     const st = stmt();
-    if (S.phase === "test" && S.resolved === "pass" && st.followUps.length) return "Go to follow-up questions";
-    if (S.phase === "fu" && S.fuIndex < st.followUps.length - 1) return "Next follow-up question";
-    return S.qi < S.queue.length - 1 ? "Next statement" : "See results";
+    if (S.step < st.followUps.length) return "Next: note for follow-up " + (S.step + 1);
+    return S.qi < S.queue.length - 1 ? "Next: note for next statement" : "See results";
   }
 
+  function maskWord(w) { return w.split(" ").map(p => p.length <= 1 ? p : p[0] + "•".repeat(p.length - 1)).join(" "); }
   function chipsHTML(groups, cls, icon, mask) {
     return groups.map(g => {
       const shown = mask ? maskWord(g[0]) : g[0];
@@ -771,46 +875,42 @@ const Study = (() => {
       return `<li class="chip ${cls}"><span aria-hidden="true">${icon}</span> ${App.esc(shown)}${syn}</li>`;
     }).join("");
   }
-  function maskWord(w) {
-    return w.split(" ").map(p => p.length <= 1 ? p : p[0] + "•".repeat(p.length - 1)).join(" ");
-  }
 
-  function feedbackHTML() {
+  function feedbackHTML(Q) {
     const r = S.last;
     if (!r) return "";
     const g = GRADE[r.grade];
-    const isFu = S.phase === "fu";
-    const st = stmt();
     const done = !!S.resolved;
-    const mask = !done; // hide missing keywords while you can still retry
-    let extra = "";
+    const showAnswerSeparately = isFu() && Q.answer && Q.answer !== Q.note;
+    let extra;
     if (S.resolved === "pass") {
-      extra = isFu
-        ? `<div class="compare"><p class="label">Model answer</p><p>${App.esc(fu().answer || "—")}</p></div>`
-        : `<div class="compare"><p class="label">Original statement — compare with yours</p><p>${App.esc(st.text)}</p></div>`;
+      extra = `<div class="compare"><p class="label">📘 Original note — compare with your answer</p><p>${App.esc(Q.note)}</p>
+        ${showAnswerSeparately ? `<p class="label">Model answer</p><p>${App.esc(Q.answer)}</p>` : ""}</div>`;
     } else if (S.resolved === "fail") {
       extra = `<div class="reveal"><p class="label">❌ 3 attempts used — here is the answer</p>
-        <p>${App.esc(isFu ? (fu().answer || "—") : st.text)}</p>
-        ${isFu ? "" : `<p class="small"><strong>Marked “needs repeat”.</strong> ${cur().repeat ? "Review it again later." : "It will come back at the end of this session."}</p>`}
+        <p>${App.esc(Q.answer)}</p>
+        ${showAnswerSeparately ? `<p class="label">Note</p><p>${App.esc(Q.note)}</p>` : ""}
+        <p class="small"><strong>Marked “needs repeat”.</strong> ${cur().repeat ? "Review this statement again later." : "This statement will come back at the end of the session (starting with its note)."}</p>
       </div>`;
     } else {
-      const hint = isFu ? fu().hint : st.hint;
-      extra = `<div class="hint"><p class="label">💡 Hint</p><p>${App.esc(hint || "Re-read the keyword list above and try again.")}</p>
-        <p class="small">You have ${MAX_ATTEMPTS - S.attempt} attempt${MAX_ATTEMPTS - S.attempt === 1 ? "" : "s"} left. Edit your answer and check again.</p></div>`;
+      const left = MAX_ATTEMPTS - S.attempt;
+      extra = `<div class="hint"><p class="label">💡 Hint</p><p>${App.esc(Q.hint || "Think about the note you just read.")}</p>
+        <p class="small">You have ${left} attempt${left === 1 ? "" : "s"} left. Edit your answer and check again.</p></div>`;
     }
     return `
       <div class="feedback ${g.cls}" role="status" aria-live="polite">
         <p class="grade"><span class="grade-icon" aria-hidden="true">${g.icon}</span> ${g.label}
           <span class="grade-pct">${r.pct}% of keywords (${r.found.length}/${r.found.length + r.missing.length})</span></p>
         ${r.found.length ? `<p class="label">Keywords found</p><ul class="chips">${chipsHTML(r.found, "ok", "✓", false)}</ul>` : ""}
-        ${r.missing.length ? `<p class="label">Keywords missing${mask ? " (hidden until you finish)" : ""}</p><ul class="chips">${chipsHTML(r.missing, "bad", "✗", mask)}</ul>` : ""}
+        ${r.missing.length ? `<p class="label">Keywords missing${done ? "" : " (spelled out when you finish)"}</p><ul class="chips">${chipsHTML(r.missing, "bad", "✗", !done)}</ul>` : ""}
         ${extra}
       </div>`;
   }
 
+  /* ---------- events ---------- */
   function bind() {
     const $ = id => document.getElementById(id);
-    if ($("btnHide")) { $("btnHide").onclick = () => { S.phase = "test"; resetQuestion(); render(); focusAnswer(); }; $("btnHide").focus(); }
+    if ($("btnRead")) { $("btnRead").onclick = () => { S.phase = "answer"; resetQuestion(); render(); focusAnswer(); }; $("btnRead").focus(); }
     const ta = $("answer");
     if (ta) {
       ta.oninput = () => { S.draft = ta.value; };
@@ -824,10 +924,11 @@ const Study = (() => {
   function resetQuestion() { S.attempt = 0; S.resolved = null; S.last = null; S.draft = ""; }
 
   function submit(giveUp) {
+    if (S.phase !== "answer" || S.resolved) return;
     const text = giveUp ? "" : S.draft.trim();
     if (!giveUp && !text) { App.toast("Write your answer first (or press “I don't remember”)."); focusAnswer(); return; }
     S.attempt++;
-    const r = Checker.check(text, activeKeywords());
+    const r = Checker.check(text, q().keywords);
     S.last = r;
     if (r.grade === "correct") S.resolved = "pass";
     else if (S.attempt >= MAX_ATTEMPTS) S.resolved = "fail";
@@ -837,57 +938,61 @@ const Study = (() => {
   }
 
   function record() {
-    const st = stmt();
-    const item = cur();
-    const score = S.resolved === "pass" ? ATTEMPT_SCORE[S.attempt - 1] : 0;
-    if (S.phase === "test") {
-      if (!item.repeat) {
-        S.results[st.id] = { score, attempts: S.attempt, status: S.resolved === "pass" ? "mastered" : "repeat", repeatPassed: false, fu: [] };
-        if (S.resolved === "fail") S.queue.push({ sid: st.id, repeat: true });
-      } else if (S.resolved === "pass") {
-        S.results[st.id].repeatPassed = true;
+    const st = stmt(), item = cur();
+    const passed = S.resolved === "pass";
+    const score = passed ? ATTEMPT_SCORE[S.attempt - 1] : 0;
+    if (!item.repeat) {
+      const res = S.results[st.id] || (S.results[st.id] = { steps: [], needsRepeat: false, repeatOk: true });
+      res.steps[S.step] = { score, attempts: S.attempt, passed };
+      if (!passed && !res.needsRepeat) {
+        res.needsRepeat = true;
+        S.queue.push({ sid: st.id, repeat: true }); // replayed at the end, starting from its note
       }
-    } else {
-      const res = S.results[st.id];
-      if (res && res.fu[S.fuIndex] === undefined) res.fu[S.fuIndex] = { score, passed: S.resolved === "pass" };
+    } else if (!passed) {
+      S.results[st.id].repeatOk = false;
     }
   }
 
   function next() {
+    if (!S.resolved) return;
     const st = stmt();
-    if (S.phase === "test" && S.resolved === "pass" && st.followUps.length) {
-      S.phase = "fu"; S.fuIndex = 0; resetQuestion(); render(); focusAnswer(); return;
+    if (S.step < st.followUps.length) { S.step++; }
+    else {
+      S.qi++; S.step = 0;
+      if (S.qi >= S.queue.length) { finish(); return; }
     }
-    if (S.phase === "fu" && S.fuIndex < st.followUps.length - 1) {
-      S.fuIndex++; resetQuestion(); render(); focusAnswer(); return;
-    }
-    S.qi++;
-    if (S.qi >= S.queue.length) { finish(); return; }
-    S.phase = "read"; S.fuIndex = 0; resetQuestion(); render();
+    S.phase = "note";
+    resetQuestion();
+    render();
   }
 
+  /* ---------- results ---------- */
   function finish() {
     S.finished = true;
     const t = S.topic;
-    const scoreMap = {};
-    let sum = 0;
+    const scoreMap = {}, masteredMap = {};
     const mastered = [], repeat = [];
-    let fuDone = 0, fuPassed = 0, fuSum = 0;
+    let sum = 0, qTotal = 0, qFirst = 0, qPassed = 0;
     t.statements.forEach(s => {
       const r = S.results[s.id];
-      scoreMap[s.id] = r.score;
-      sum += r.score;
-      (r.status === "mastered" ? mastered : repeat).push({ s, r });
-      r.fu.forEach(f => { if (f) { fuDone++; fuSum += f.score; if (f.passed) fuPassed++; } });
+      const steps = r.steps.filter(Boolean);
+      const avg = Math.round(steps.reduce((a, x) => a + x.score, 0) / steps.length);
+      scoreMap[s.id] = avg; sum += avg;
+      masteredMap[s.id] = !r.needsRepeat;
+      steps.forEach(x => { qTotal++; if (x.passed) qPassed++; if (x.passed && x.attempts === 1) qFirst++; });
+      (r.needsRepeat ? repeat : mastered).push({ s, r, avg });
     });
     const sessionPct = Math.round(sum / t.statements.length);
-    Store.recordStudy(t.id, scoreMap);
+    Store.recordStudy(t.id, scoreMap, masteredMap);
     const prog = Store.topicProgress(t.id);
-    const first = mastered.filter(x => x.r.attempts === 1).length;
 
-    const li = ({ s, r }) => `<li><span class="pill ${r.status === "mastered" ? "ok" : "bad"}">${r.status === "mastered" ? `✓ ${r.score}%` : "✗ 0%"}</span>
+    const failedParts = r => r.steps.map((x, i) => x && !x.passed ? (i === 0 ? "main statement" : "follow-up " + i) : null).filter(Boolean).join(", ");
+    const li = ({ s, r, avg }) => `<li>
+      <span class="pill ${r.needsRepeat ? "bad" : "ok"}">${r.needsRepeat ? "✗" : "✓"} ${avg}%</span>
       <span>${App.esc(s.text)}</span>
-      ${r.status === "mastered" ? `<span class="muted small">attempt ${r.attempts}</span>` : `<span class="muted small">${r.repeatPassed ? "got it in the repeat round" : "still needs work"}</span>`}</li>`;
+      <span class="muted small">${r.needsRepeat
+        ? `Missed: ${failedParts(r)} · ${r.repeatOk ? "got it right in the repeat round" : "still needs work"}`
+        : `Main statement on attempt ${r.steps[0].attempts}${s.followUps.length ? ` · ${s.followUps.length} follow-up(s) passed` : ""}`}</span></li>`;
 
     App.root().innerHTML = `
       <section class="results">
@@ -895,14 +1000,14 @@ const Study = (() => {
         <h1>Session complete 🎉</h1>
         <div class="stats">
           <div class="stat"><span class="stat-num">${sessionPct}%</span><span class="stat-lbl">Session score</span></div>
-          <div class="stat"><span class="stat-num">${mastered.length}/${t.statements.length}</span><span class="stat-lbl">Mastered</span></div>
-          <div class="stat"><span class="stat-num">${first}</span><span class="stat-lbl">Right on 1st try</span></div>
-          <div class="stat"><span class="stat-num">${fuDone ? fuPassed + "/" + fuDone : "—"}</span><span class="stat-lbl">Follow-ups correct</span></div>
+          <div class="stat"><span class="stat-num">${mastered.length}/${t.statements.length}</span><span class="stat-lbl">Statements mastered</span></div>
+          <div class="stat"><span class="stat-num">${qPassed}/${qTotal}</span><span class="stat-lbl">Questions correct</span></div>
+          <div class="stat"><span class="stat-num">${qFirst}</span><span class="stat-lbl">Right on 1st try</span></div>
         </div>
         <div class="card">
           <p class="label">Topic memorisation</p>
           <div class="progress big" role="progressbar" aria-label="Topic memorisation" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${prog.pct}"><div style="width:${prog.pct}%"></div></div>
-          <p class="small muted">${prog.pct}% · Scoring: 1st attempt 100%, 2nd 60%, 3rd 30%, failed 0%.</p>
+          <p class="small muted">${prog.pct}% · Each question scores 100% (1st attempt), 60% (2nd), 30% (3rd) or 0% (failed). A statement's score is the average of its main question and follow-ups.</p>
         </div>
         <h2>✓ Mastered (${mastered.length})</h2>
         ${mastered.length ? `<ul class="result-list">${mastered.map(li).join("")}</ul>` : `<p class="muted">None yet — keep going!</p>`}
@@ -1149,7 +1254,7 @@ const Manage = (() => {
   function editorHTML(t) {
     const s = editing === "new" ? { text: "", keywords: [], hint: "", followUps: [], mcq: null } : t.statements.find(x => x.id === editing);
     if (!s) return "";
-    const fus = [0, 1, 2].map(i => s.followUps[i] || { question: "", answer: "", keywords: [], hint: "" });
+    const fus = [0, 1, 2].map(i => s.followUps[i] || { note: "", question: "", answer: "", keywords: [], hint: "" });
     const mcq = s.mcq || { question: "", options: ["", "", "", ""], answer: 0 };
     return `
       <form id="fSt" class="editor" novalidate>
@@ -1168,6 +1273,8 @@ const Manage = (() => {
           ${fus.map((f, i) => `
             <div class="fu-block">
               <p class="label">Follow-up ${i + 1}${i ? " (optional)" : ""}</p>
+              <label for="fn${i}">Note <span class="muted small">— shown BEFORE this question is asked</span></label>
+              <textarea id="fn${i}" rows="2">${App.esc(f.note)}</textarea>
               <label for="fq${i}">Question</label><input id="fq${i}" value="${App.esc(f.question)}">
               <label for="fa${i}">Model answer</label><input id="fa${i}" value="${App.esc(f.answer)}">
               <label for="fk${i}">Keywords <span class="muted small">(one per line, synonyms with |)</span></label>
@@ -1240,9 +1347,9 @@ const Manage = (() => {
     const keywords = textToKw($("eKw").value);
     if (!text) errs.push("Statement text is required.");
     if (!keywords.length) errs.push("Add at least one keyword.");
-    const followUps = [0, 1, 2].map(i => ({ question: v("fq" + i), answer: v("fa" + i), keywords: textToKw($("fk" + i).value), hint: v("fh" + i) }))
-      .filter(f => f.question || f.answer || f.keywords.length || f.hint);
-    followUps.forEach((f, i) => { if (!f.question || !f.keywords.length) errs.push(`Follow-up ${i + 1} needs a question and at least one keyword.`); });
+    const followUps = [0, 1, 2].map(i => ({ note: v("fn" + i), question: v("fq" + i), answer: v("fa" + i), keywords: textToKw($("fk" + i).value), hint: v("fh" + i) }))
+      .filter(f => f.note || f.question || f.answer || f.keywords.length || f.hint);
+    followUps.forEach((f, i) => { if (!f.note || !f.question || !f.keywords.length) errs.push(`Follow-up ${i + 1} needs a note, a question and at least one keyword.`); });
     if (!followUps.length) errs.push("Add at least one follow-up question.");
     const options = [0, 1, 2, 3].map(i => v("mo" + i));
     const ansEl = document.querySelector('input[name="mcqAns"]:checked');
@@ -1319,12 +1426,18 @@ const App = (() => {
     const ts = Store.topics();
     root().innerHTML = `
       <section class="home">
-        <h1>Your topics</h1>
-        <p class="muted">Pick a topic to <strong>memorise</strong> (write it in your own words) or play the <strong>quiz</strong>.</p>
-        ${ts.length ? `<div class="grid">${ts.map(t => {
+        <div class="hero">
+          <h1 class="hero-title" aria-label="Read it. Hide it. Know it."><span class="w">Read&nbsp;it.</span> <span class="w">Hide&nbsp;it.</span> <span class="w hl">Know&nbsp;it.</span></h1>
+          <p class="hero-sub">Pick a topic to <strong>memorise</strong> — read the note, write it in your own words — or play the <strong>quiz</strong>.</p>
+        </div>
+        <div class="marquee" aria-hidden="true"><div class="marquee-track">${
+          Array(2).fill('<span>Read the note ✦ Hide it ✦ Write it your way ✦ Check the keywords ✦ Repeat what you missed ✦&nbsp;</span>'.repeat(2)).join("")
+        }</div></div>
+        ${ts.length ? `<div class="grid">${ts.map((t, ti) => {
           const p = Store.topicProgress(t.id);
           const lvl = p.pct >= 70 ? "ok" : p.pct >= 40 ? "warn" : "bad";
           return `<article class="card topic-card">
+            <span class="topic-num">#${String(ti + 1).padStart(2, "0")}</span>
             <h2>${esc(t.name)}</h2>
             <p class="muted small">${t.statements.length} statements · Mastered ${p.mastered}/${p.total}</p>
             <div class="progress ${p.studied ? lvl : ""}" role="progressbar" aria-label="Memorisation for ${esc(t.name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${p.pct}"><div style="width:${p.pct}%"></div></div>
@@ -1339,10 +1452,12 @@ const App = (() => {
         <details class="card howto">
           <summary>How it works</summary>
           <ol>
-            <li><strong>Memorise:</strong> read a statement → press <em>Hide &amp; Test</em> → write it in your own words.</li>
-            <li>The app checks your <strong>keywords</strong>: ≥70% = Correct, 40–69% = Almost, &lt;40% = Wrong. Small spelling mistakes are accepted.</li>
-            <li>Correct → compare with the original, then answer follow-up questions. Wrong → get a hint (max 3 attempts). After 3 misses the statement comes back at the end.</li>
-            <li>Score: 1st attempt 100%, 2nd 60%, 3rd 30%, failed 0%.</li>
+            <li><strong>Every question</strong> (main statement and each follow-up) follows the same cycle: <strong>Note → Answer → Check</strong>.</li>
+            <li><strong>Note:</strong> read the note, then press <em>I've read it, test me</em>. You can't type yet.</li>
+            <li><strong>Answer:</strong> the note is hidden; write what you remember in your own words.</li>
+            <li><strong>Check:</strong> ≥70% of keywords = Correct, 40–69% = Almost, &lt;40% = Wrong. Small spelling mistakes are accepted. Correct → compare with the note. Otherwise → hint, max 3 attempts; after 3 misses you see the answer and the statement is marked “needs repeat”.</li>
+            <li>“Needs repeat” statements come back at the end of the session, starting again from their note.</li>
+            <li>Score per question: 1st attempt 100%, 2nd 60%, 3rd 30%, failed 0%.</li>
             <li><strong>Quiz:</strong> every statement's MCQ in random order, ${20}s each, with streak bonus.</li>
           </ol>
         </details>
