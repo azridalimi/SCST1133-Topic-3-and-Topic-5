@@ -1,0 +1,1388 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memorise Notes</title>
+<meta name="color-scheme" content="light dark">
+<style>:root {
+  --bg: #f6f7fb; --surface: #ffffff; --surface-2: #eef0f6; --text: #1b1f2a; --muted: #5d6475;
+  --border: #d9dce5; --primary: #3b5bdb; --primary-text: #fff; --focus: #f59f00;
+  --ok: #1f8a4c; --ok-bg: #e6f6ec; --warn: #9a6700; --warn-bg: #fff4d6; --bad: #c92a2a; --bad-bg: #fde8e8;
+  --radius: 14px; --shadow: 0 2px 10px rgba(20, 30, 60, .07);
+}
+[data-theme="dark"] {
+  --bg: #11141b; --surface: #1a1e28; --surface-2: #242a37; --text: #e8eaf0; --muted: #a2a9b9;
+  --border: #323a4a; --primary: #7c94ff; --primary-text: #0d1020; --focus: #ffc94d;
+  --ok: #5fd08f; --ok-bg: #143323; --warn: #ffd36b; --warn-bg: #3a2f10; --bad: #ff8a8a; --bad-bg: #3d1818;
+  --shadow: 0 2px 12px rgba(0, 0, 0, .35);
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 17px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+h1 { font-size: 1.6rem; line-height: 1.25; margin: .2em 0 .4em; }
+h2 { font-size: 1.15rem; margin: 1.2em 0 .5em; }
+.card h2:first-child { margin-top: 0; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.muted { color: var(--muted); } .small { font-size: .88rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.topbar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 10px 16px; background: var(--surface); border-bottom: 1px solid var(--border); }
+.brand { font-weight: 700; font-size: 1.1rem; background: none; border: 0; color: var(--text); cursor: pointer; padding: 6px 4px; }
+.topnav { display: flex; gap: 4px; align-items: center; }
+.topnav button { background: none; border: 0; color: var(--text); font: inherit; font-size: .95rem; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+.topnav button:hover { background: var(--surface-2); }
+.topnav button[aria-current="page"] { background: var(--surface-2); font-weight: 600; }
+main { max-width: 860px; margin: 0 auto; padding: 20px 16px 80px; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; box-shadow: var(--shadow); margin: 12px 0; }
+.grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); }
+.topic-card h2 { margin: 0 0 4px; }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: inherit; font-size: .95rem; font-weight: 600;
+  padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; min-height: 44px; }
+.btn:hover { filter: brightness(.97); }
+.btn.primary { background: var(--primary); color: var(--primary-text); border-color: var(--primary); }
+.btn.ghost { background: transparent; }
+.btn.danger { color: var(--bad); }
+.btn.big { font-size: 1.05rem; padding: 12px 22px; }
+.btn.small { min-height: 34px; padding: 4px 10px; font-size: .85rem; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+
+.progress { height: 12px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin: 8px 0; border: 1px solid var(--border); }
+.progress > div { height: 100%; background: var(--primary); border-radius: 99px; transition: width .4s; }
+.progress.ok > div { background: var(--ok); } .progress.warn > div { background: var(--warn); } .progress.bad > div { background: var(--bad); }
+.progress.big { height: 18px; }
+
+.session-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.eyebrow { margin: 0; color: var(--muted); font-size: .85rem; font-weight: 600; text-transform: uppercase; letter-spacing: .03em; }
+.label { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 0 0 6px; display: block; }
+.statement-text { font-size: 1.2rem; line-height: 1.55; margin: 0; }
+.statement-card { border-left: 6px solid var(--primary); }
+.hidden-card { text-align: center; background: repeating-linear-gradient(45deg, var(--surface), var(--surface) 10px, var(--surface-2) 10px, var(--surface-2) 20px); }
+.hidden-card p { margin: 4px 0; }
+.question-card { border-left: 6px solid var(--focus); }
+
+.answer-box { width: 100%; font: inherit; font-size: 1.1rem; padding: 14px; border-radius: 12px; border: 2px solid var(--border);
+  background: var(--surface); color: var(--text); min-height: 150px; resize: vertical; }
+.answer-box:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 30%, transparent); }
+.answer-box:disabled { opacity: .75; }
+.attempts { margin: 6px 0 0; font-weight: 600; color: var(--muted); }
+.badge { display: inline-block; font-size: .75rem; padding: 2px 8px; border-radius: 99px; vertical-align: middle; font-weight: 700; }
+.badge.warn { background: var(--warn-bg); color: var(--warn); }
+.badge.ok { background: var(--ok-bg); color: var(--ok); }
+.big-badge { font-size: 1rem; padding: 6px 14px; }
+
+.feedback { border-radius: 12px; padding: 14px 16px; margin-top: 14px; border: 2px solid; }
+.feedback.ok { background: var(--ok-bg); border-color: var(--ok); }
+.feedback.warn { background: var(--warn-bg); border-color: var(--warn); }
+.feedback.bad { background: var(--bad-bg); border-color: var(--bad); }
+.grade { font-size: 1.25rem; font-weight: 800; margin: 0 0 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.feedback.ok .grade { color: var(--ok); } .feedback.warn .grade { color: var(--warn); } .feedback.bad .grade { color: var(--bad); }
+.grade-icon { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; color: var(--surface); }
+.feedback.ok .grade-icon { background: var(--ok); } .feedback.warn .grade-icon { background: var(--warn); } .feedback.bad .grade-icon { background: var(--bad); }
+.grade-pct { font-size: .9rem; font-weight: 600; color: var(--text); }
+.chips { list-style: none; padding: 0; margin: 0 0 10px; display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { padding: 3px 10px; border-radius: 99px; font-size: .9rem; font-weight: 600; background: var(--surface); border: 1px solid; }
+.chip.ok { color: var(--ok); border-color: var(--ok); } .chip.bad { color: var(--bad); border-color: var(--bad); }
+.syn { font-weight: 400; opacity: .8; }
+.hint, .compare, .reveal { background: var(--surface); border-radius: 10px; padding: 10px 14px; margin-top: 8px; border: 1px solid var(--border); }
+.hint p, .compare p, .reveal p { margin: 4px 0; }
+
+.hud { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0; }
+.hud-item { background: var(--surface); border: 1px solid var(--border); border-radius: 99px; padding: 4px 12px; }
+.hud-item.hot { border-color: var(--warn); background: var(--warn-bg); }
+.quiz-tools { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.timer { height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+.timer > div { height: 100%; width: 100%; background: var(--primary); transition: width .1s linear; }
+.timer > div.low { background: var(--bad); }
+.options { display: grid; gap: 10px; }
+.option { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; text-align: left; font: inherit; padding: 14px; min-height: 56px;
+  border-radius: 12px; border: 2px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; }
+.option:hover:not(:disabled) { border-color: var(--primary); }
+.option:disabled { cursor: default; }
+.opt-key { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: var(--surface-2); font-weight: 700; flex: none; }
+.option.correct { border-color: var(--ok); background: var(--ok-bg); }
+.option.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.opt-tag { margin-left: auto; font-weight: 700; font-size: .85rem; }
+.option.correct .opt-tag { color: var(--ok); } .option.wrong .opt-tag { color: var(--bad); }
+.pop { animation: pop .35s ease; } .shake { animation: shake .35s ease; }
+@keyframes pop { 0% { transform: scale(.94); } 60% { transform: scale(1.03); } 100% { transform: scale(1); } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+@media (prefers-reduced-motion: reduce) { .pop, .shake { animation: none; } * { transition: none !important; } }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: 12px 0; }
+.stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; text-align: center; }
+.stat-num { display: block; font-size: 1.7rem; font-weight: 800; }
+.stat-lbl { color: var(--muted); font-size: .85rem; }
+.result-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.result-list li { display: grid; grid-template-columns: auto 1fr; gap: 4px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.result-list li > .small { grid-column: 2; }
+.pill { font-weight: 700; font-size: .85rem; padding: 2px 8px; border-radius: 99px; height: fit-content; white-space: nowrap; }
+.pill.ok { background: var(--ok-bg); color: var(--ok); } .pill.bad { background: var(--bad-bg); color: var(--bad); }
+
+.toolbar { display: flex; flex-wrap: wrap; gap: 8px; }
+.manage-grid { display: grid; gap: 12px; grid-template-columns: 260px 1fr; align-items: start; }
+.topic-list { list-style: none; padding: 0; margin: 0 0 10px; display: grid; gap: 4px; }
+.topic-pick { width: 100%; text-align: left; font: inherit; font-size: .95rem; padding: 8px 10px; border-radius: 8px; border: 1px solid transparent; background: none; color: var(--text); cursor: pointer; }
+.topic-pick:hover { background: var(--surface-2); }
+.topic-pick.active { background: var(--surface-2); border-color: var(--primary); font-weight: 600; }
+.inline-form { display: flex; flex-wrap: wrap; gap: 8px; }
+.inline-form input { flex: 1 1 160px; }
+input:not([type=radio]):not([type=file]), .editor textarea { font: inherit; font-size: 1rem; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); width: 100%; min-height: 44px; }
+.inline-form input { width: auto; }
+.st-list { padding-left: 1.4em; display: grid; gap: 10px; }
+.st-list li { padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.st-text { display: block; } .st-meta { display: block; } .st-actions { display: flex; gap: 6px; margin-top: 4px; }
+.bad-text { color: var(--bad); }
+.editor { margin-top: 18px; border-top: 2px solid var(--border); padding-top: 8px; }
+.editor > label, .fu-block > label, fieldset > label { display: block; font-weight: 600; font-size: .9rem; margin: 12px 0 4px; }
+fieldset { border: 1px solid var(--border); border-radius: 12px; margin: 16px 0; padding: 8px 14px 14px; }
+legend { font-weight: 700; padding: 0 6px; }
+.fu-block { border-top: 1px dashed var(--border); padding-top: 8px; margin-top: 8px; }
+.fu-block:first-of-type { border-top: 0; }
+.mcq-opt { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+.mcq-opt input[type=radio] { width: 22px; height: 22px; flex: none; accent-color: var(--ok); }
+.form-error { color: var(--bad); font-weight: 600; }
+.howto summary { cursor: pointer; font-weight: 700; }
+
+#toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%) translateY(150%); background: var(--text); color: var(--bg);
+  padding: 12px 18px; border-radius: 12px; max-width: calc(100% - 32px); box-shadow: var(--shadow); transition: transform .25s, opacity .25s; z-index: 50;
+  opacity: 0; visibility: hidden; }
+#toast.show { transform: translateX(-50%) translateY(0); opacity: 1; visibility: visible; }
+
+@media (max-width: 700px) {
+  body { font-size: 16px; }
+  .manage-grid { grid-template-columns: 1fr; }
+  h1 { font-size: 1.35rem; }
+  .statement-text { font-size: 1.1rem; }
+  .actions .btn.big { flex: 1 1 100%; }
+  .session-head { flex-wrap: wrap; }
+  .topnav button { padding: 8px 8px; }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <button class="brand" data-nav="home">📚 Memorise Notes</button>
+  <nav class="topnav" aria-label="Main">
+    <button data-nav="home" aria-current="page">Home</button>
+    <button data-nav="manage">Manage Notes</button>
+    <button id="themeToggle" aria-label="Switch to dark mode">🌙</button>
+  </nav>
+</header>
+<main id="app" tabindex="-1"></main>
+<div id="toast" role="status" aria-live="polite"></div>
+<script>/*
+ * DEFAULT NOTES — loaded the first time the app opens (or after "Reset to defaults").
+ * After that, your notes live in the browser (localStorage) and you edit them
+ * on the "Manage Notes" page. You can also edit this file directly.
+ *
+ * FORMAT
+ * topics: [
+ *   {
+ *     id: "unique-id",
+ *     name: "Topic name",
+ *     statements: [
+ *       {
+ *         id: "unique-id",
+ *         text: "The full statement to memorise.",
+ *         keywords: ["keyword", "synonym A|synonym B|synonym C", "multi word phrase"],
+ *              // each item = ONE required keyword. Use | to list accepted synonyms.
+ *              // a multi-word keyword needs every word to appear (any order).
+ *         hint: "Shown when the answer is wrong.",
+ *         followUps: [   // 1–3 follow-up questions about the same statement
+ *           { question: "...", answer: "model answer", keywords: ["..."], hint: "..." }
+ *         ],
+ *         mcq: { question: "...", options: ["A", "B", "C", "D"], answer: 0 }  // answer = index of correct option
+ *       }
+ *     ]
+ *   }
+ * ]
+ */
+window.DEFAULT_DATA = {
+  topics: [
+    {
+      id: "t3",
+      name: "Topic 3: Introduction to Data Engineering",
+      statements: [
+        {
+          id: "t3-1",
+          text: "Data engineering is building and running the systems that turn raw data into clean, reliable information for others to use (analysis and machine learning).",
+          keywords: ["build|building|builds|design|run|running", "system|systems|pipeline|pipelines", "raw", "clean|reliable|trusted", "information|info|usable"],
+          hint: "Think of the water treatment plant: dirty river water → plant → clean tap water.",
+          followUps: [
+            { question: "What is the simple 4-step version of data engineering?", answer: "Get data → store it → prepare it → hand it over.", keywords: ["get|collect|ingest|take", "store|storage|keep", "prepare|clean|transform", "hand|serve|deliver|give"], hint: "Get … store … prepare … hand ___." },
+            { question: "In the big-picture analogy, what is data engineering compared to?", answer: "A water treatment plant for data.", keywords: ["water", "treatment|plant"], hint: "Dirty river water becomes clean tap water." }
+          ],
+          mcq: { question: "Which best defines data engineering?", options: ["Building and running systems that turn raw data into clean, reliable information", "Training machine learning models to predict outcomes", "Designing dashboards and KPIs for managers", "Running A/B tests on app layouts"], answer: 0 }
+        },
+        {
+          id: "t3-2",
+          text: "Data engineering history has four eras: the data warehouse era (1980–2000), the big bang of Google File System, MapReduce and Hadoop (early 2000s), the big data hype (2000s–2010s), and the data lifecycle engineer (2020s).",
+          keywords: ["warehouse|warehouses", "hadoop|mapreduce|google file system", "hype|big data", "lifecycle"],
+          hint: "Memory trick: \"Warehouse → Hadoop → Hype → Lifecycle\".",
+          followUps: [
+            { question: "Why did the term \"big data\" fade?", answer: "Tools became simple and cheap, so big data became normal.", keywords: ["simple|simpler|easy|easier|cheap|cheaper", "normal|common|standard|everyday"], hint: "The tools changed — and so big data stopped being special." },
+            { question: "In which year was Hadoop released?", answer: "2006", keywords: ["2006"], hint: "Google File System 2003, MapReduce 2004, then Hadoop two years later." }
+          ],
+          mcq: { question: "What happened during the 1980–2000 era?", options: ["Relational databases, SQL and data warehouses", "Hadoop and MapReduce were invented", "The big data hype", "The data lifecycle engineer emerged"], answer: 0 }
+        },
+        {
+          id: "t3-3",
+          text: "Malaysia's PDPA was passed in 2010 and amended in 2024 (in force during 2025), adding duties to report data breaches and appoint a data protection officer, with fines up to RM1 million.",
+          keywords: ["pdpa|personal data protection", "2010", "2024", "breach|breaches", "officer|dpo", "rm1 million|1 million|rm1m|rm1"],
+          hint: "Passed 2010, amended 2024. New duties: report ___ and appoint a ___. Max fine RM_ million.",
+          followUps: [
+            { question: "What is the maximum PDPA fine?", answer: "RM1 million", keywords: ["rm1 million|1 million|rm1m|one million"], hint: "One ___ ringgit." },
+            { question: "Name one new duty added by the 2024 PDPA amendment.", answer: "Report data breaches, or appoint a data protection officer.", keywords: ["breach|breaches|officer|dpo"], hint: "One is about reporting incidents; the other is about appointing a person." }
+          ],
+          mcq: { question: "When was Malaysia's PDPA first passed?", options: ["2010", "2024", "2006", "2003"], answer: 0 }
+        },
+        {
+          id: "t3-4",
+          text: "The data engineer builds the kitchen; the data scientist cooks. Data engineering is upstream (comes first) and data science is downstream.",
+          keywords: ["engineer|engineering", "kitchen|build|builds", "scientist|science", "cook|cooks|cooking", "upstream|first", "downstream"],
+          hint: "Memory trick about a kitchen. Which comes first in the river: up___ or down___?",
+          followUps: [
+            { question: "How much of their time do data scientists spend cleaning and preparing data?", answer: "70–80%", keywords: ["70", "80"], hint: "Between seventy and eighty percent." },
+            { question: "Is \"train a model to predict dropouts\" a DE or a DS task?", answer: "DS — data scientist (predicting).", keywords: ["ds|scientist|science"], hint: "Rule: predicting or experimenting = ?" },
+            { question: "Is \"schedule a nightly job and alert on failure\" a DE or a DS task?", answer: "DE — data engineer (moving/cleaning/storing data).", keywords: ["de|engineer|engineering"], hint: "Rule: moving, cleaning or storing data = ?" }
+          ],
+          mcq: { question: "Which task belongs to a data engineer?", options: ["Convert dates into one format", "Train a model to predict dropouts", "Run an A/B test of two layouts", "Forecast next year's sales"], answer: 0 }
+        },
+        {
+          id: "t3-5",
+          text: "The data engineering lifecycle has five stages: generation, storage, ingestion, transformation and serving.",
+          keywords: ["generation|generate|generated", "storage|store", "ingestion|ingest", "transformation|transform", "serving|serve"],
+          hint: "Memory trick: \"Good Students Ignore Tiring Sleep\".",
+          followUps: [
+            { question: "Which lifecycle stage underpins (is the foundation of) all the others?", answer: "Storage", keywords: ["storage|store"], hint: "Exam trap! It's used at every stage." },
+            { question: "Shopee order: at which stage does the seller see a sales dashboard?", answer: "Serving", keywords: ["serving|serve"], hint: "The final stage — giving data to users." },
+            { question: "What is the memory trick for the five stages?", answer: "Good Students Ignore Tiring Sleep", keywords: ["good", "students|student", "ignore", "tiring", "sleep"], hint: "G… S… I… T… S…" }
+          ],
+          mcq: { question: "Which lifecycle stage underpins all the others?", options: ["Storage", "Ingestion", "Serving", "Generation"], answer: 0 }
+        },
+        {
+          id: "t3-6",
+          text: "The six undercurrents are security, orchestration, software engineering, data management, DataOps and data architecture (\"SOS + 3 D's\").",
+          keywords: ["security", "orchestration", "software", "management", "dataops", "architecture"],
+          hint: "Memory trick: \"SOS + 3 D's\" — S, O, S + Data ___, Data___, Data ___.",
+          followUps: [
+            { question: "What does orchestration mean?", answer: "Scheduling jobs in the right order.", keywords: ["schedule|scheduling|scheduler", "order|sequence"], hint: "Like a conductor: when each job runs, and in what ___." },
+            { question: "Why are they called \"undercurrents\"?", answer: "Like currents under the sea, you can't see them but they steer everything.", keywords: ["see|visible|invisible|hidden|unseen", "steer|guide|affect|influence|control|drive"], hint: "Currents under the sea…" }
+          ],
+          mcq: { question: "Which is NOT one of the six undercurrents?", options: ["Serving", "Security", "Orchestration", "DataOps"], answer: 0 }
+        },
+        {
+          id: "t3-7",
+          text: "In England (2020), 15,841 COVID cases went missing because results were stored in an old Excel .XLS file, which only holds 65,536 rows.",
+          keywords: ["15841|15 841", "excel|xls|spreadsheet", "65536|65 536", "rows|row"],
+          hint: "15,8__ cases lost. Old Excel .XLS limit = 65,5__ rows.",
+          followUps: [
+            { question: "What simple check would have caught the problem?", answer: "A row-count check plus an alert.", keywords: ["count|row count|rows", "check|alert|monitor|monitoring"], hint: "Count the ___ and raise an ___." },
+            { question: "What is the lesson of this case?", answer: "Undercurrents matter — never run a pipeline on a spreadsheet.", keywords: ["undercurrent|undercurrents|spreadsheet|spreadsheets|monitoring|monitor"], hint: "Which hidden things steer every pipeline?" }
+          ],
+          mcq: { question: "How many rows can an old Excel .XLS file hold?", options: ["65,536", "1,048,576", "15,841", "10,000"], answer: 0 }
+        },
+        {
+          id: "t3-8",
+          text: "A data engineer balances six trade-off goals: cost, agility, scalability, simplicity, reuse and interoperability (\"CASS RI\").",
+          keywords: ["cost", "agility|agile", "scalability|scalable", "simplicity|simple", "reuse|reusability", "interoperability"],
+          hint: "Memory trick: \"CASS RI\".",
+          followUps: [
+            { question: "What does a small start-up care about most?", answer: "Cost and agility.", keywords: ["cost", "agility|agile"], hint: "Little money, needs to move fast." },
+            { question: "What does a national bank care about most?", answer: "Security, scalability and reliability.", keywords: ["security|secure", "scalability|scale|scalable", "reliability|reliable"], hint: "Huge volume, lots of money at stake, must never fail." }
+          ],
+          mcq: { question: "Which pair does a small start-up care about most?", options: ["Cost and agility", "Security and reliability", "Reuse and interoperability", "Scalability and governance"], answer: 0 }
+        },
+        {
+          id: "t3-9",
+          text: "SQL is the common language of data and must be mastered; Python is the bridge to data science. Also useful: a JVM language (Java/Scala) and bash.",
+          keywords: ["sql", "python", "jvm|java|scala", "bash"],
+          hint: "Four languages: the common one, the bridge, the JVM one, and the shell one.",
+          followUps: [
+            { question: "What does it mean that SQL is declarative?", answer: "You say what you want, not how.", keywords: ["what", "how"], hint: "You describe the result, not the steps." },
+            { question: "Through which tools did SQL make its comeback?", answer: "Hive, Spark SQL and cloud warehouses.", keywords: ["hive", "spark", "cloud|warehouse|warehouses"], hint: "H___, S___ SQL and c___ warehouses." }
+          ],
+          mcq: { question: "Which language is called \"the bridge to data science\"?", options: ["Python", "SQL", "Bash", "Scala"], answer: 0 }
+        },
+        {
+          id: "t3-10",
+          text: "Uber \"relived history\": data warehouse → Hadoop data lake → incremental platform. Data freshness went from 24+ hours to under 1 hour.",
+          keywords: ["warehouse", "hadoop|lake", "incremental", "24", "1 hour|one hour|hour"],
+          hint: "Three steps: warehouse → H___ lake → i___ platform. Freshness: 2_ hours → under _ hour.",
+          followUps: [
+            { question: "What is the main lesson of the Uber case?", answer: "Each fix revealed the next problem.", keywords: ["fix|fixes|solution|solving|solved", "next|new|another", "problem|problems|issue"], hint: "Every time they solved something…" }
+          ],
+          mcq: { question: "Uber's data freshness improved from 24+ hours to…", options: ["Under 1 hour", "Under 12 hours", "Exactly 6 hours", "Under 1 week"], answer: 0 }
+        },
+        {
+          id: "t3-11",
+          text: "KKM COVID-19 open data (Malaysia) published daily CSV files on GitHub from mid-2021, in folders: epidemic, mysejahtera, vaccination and static.",
+          keywords: ["csv", "github", "2021", "epidemic", "mysejahtera", "vaccination|vaccine", "static"],
+          hint: "Daily ___ files on G___ from 2021. Four folders: e___, m___, v___, s___.",
+          followUps: [
+            { question: "What are the key undercurrents in the KKM case?", answer: "De-identification, documentation and automation.", keywords: ["identification|deidentification|anonymisation|anonymization|anonymise", "documentation|document|documented", "automation|automate|automated"], hint: "Protect identities, explain the data, run it automatically." }
+          ],
+          mcq: { question: "Where did KKM publish its daily COVID-19 CSV files?", options: ["GitHub", "Facebook", "Dropbox", "Google Drive"], answer: 0 }
+        },
+        {
+          id: "t3-12",
+          text: "Optional case hooks: PHE — never run a pipeline on a spreadsheet; Prime Video — simpler can be better; Airbnb built Airflow and gave it away free; LinkedIn's Kafka started batch → streaming; Google Flu Trends — big data can still be wrong.",
+          keywords: ["spreadsheet", "simpler|simple", "airflow", "kafka|streaming", "wrong|flu"],
+          hint: "Five hooks: spreadsheet, simpler, Airflow, Kafka, and big data being wrong.",
+          followUps: [
+            { question: "Which company built Kafka?", answer: "LinkedIn", keywords: ["linkedin"], hint: "The professional social network." },
+            { question: "Which company built Airflow (a scheduler) and gave it away free?", answer: "Airbnb", keywords: ["airbnb"], hint: "A home-sharing company." }
+          ],
+          mcq: { question: "Which case teaches \"big data can still be wrong\"?", options: ["Google Flu Trends", "Prime Video", "Airbnb (Airflow)", "LinkedIn (Kafka)"], answer: 0 }
+        }
+      ]
+    },
+    {
+      id: "t5",
+      name: "Topic 5: The Data Engineering Ecosystem",
+      statements: [
+        {
+          id: "t5-1",
+          text: "Having data is not enough — it must be usable. Raw data is original records not yet prepared; information is data that is organised and has meaning.",
+          keywords: ["usable|useful", "raw", "prepared|unprepared", "information", "organised|organized|arranged", "meaning|meaningful"],
+          hint: "Big idea: having data ≠ having ___ data. Then define raw data vs information.",
+          followUps: [
+            { question: "A university has thousands of student records but can't find the right one when needed. Does it really have useful data?", answer: "No.", keywords: ["no|not"], hint: "Data must be usable." },
+            { question: "Define \"information\".", answer: "Data that is organised and has meaning.", keywords: ["organised|organized|arranged", "meaning|meaningful"], hint: "Two words: o___ and m___." }
+          ],
+          mcq: { question: "Raw data is…", options: ["Original records, not yet prepared", "Data that is organised and meaningful", "A dashboard for managers", "A machine learning model"], answer: 0 }
+        },
+        {
+          id: "t5-2",
+          text: "Good data gives four values (\"DICE\"): better decisions, improved services, connected information and enabling innovation.",
+          keywords: ["decision|decisions", "improved|improve|services|service", "connected|connect", "innovation|innovate"],
+          hint: "Memory trick: \"DICE\".",
+          followUps: [
+            { question: "How does good data help a bank?", answer: "Accurate transactions and spotting fraud.", keywords: ["accurate|accuracy|transaction|transactions", "fraud"], hint: "Getting transactions right, and catching criminals." },
+            { question: "What does \"enabling innovation\" mean?", answer: "Analytics and AI need good data first.", keywords: ["analytics|ai|machine learning|ml", "good|clean|quality|trusted"], hint: "No foundation, no AI." }
+          ],
+          mcq: { question: "In \"DICE\", what does the C stand for?", options: ["Connected information", "Cost", "Cloud computing", "Compliance"], answer: 0 }
+        },
+        {
+          id: "t5-3",
+          text: "A data ecosystem is people + data + rules + processes + technology, all connected.",
+          keywords: ["people", "rules", "processes|process", "technology|tech", "connected|connect|linked"],
+          hint: "Five things joined together: p___ + data + r___ + p___ + t___.",
+          followUps: [
+            { question: "In the restaurant analogy, who are the farmers?", answer: "Data producers.", keywords: ["producer|producers|produce"], hint: "They create the raw ingredients." },
+            { question: "In the restaurant analogy, what is the kitchen?", answer: "Data engineering work.", keywords: ["engineering|engineer"], hint: "Where things are collected, checked and prepared." },
+            { question: "Can fancy technology fix unclear responsibility or untrusted data?", answer: "No — fancy technology can't fix unclear responsibility or untrusted data.", keywords: ["no|not|cannot|cant"], hint: "That's the key idea of the ecosystem." }
+          ],
+          mcq: { question: "In the restaurant analogy, the customers represent…", options: ["Data users", "Data producers", "Data sources", "Rules and responsibilities"], answer: 0 }
+        },
+        {
+          id: "t5-4",
+          text: "The five ecosystem elements are data producers, data sources, data engineering work, rules and responsibilities, and data users.",
+          keywords: ["producers|producer", "sources|source", "engineering", "rules|responsibilities|responsibility", "users|user"],
+          hint: "Restaurant: farmers, ingredients, kitchen, food safety rules, customers.",
+          followUps: [
+            { question: "What are \"data sources\"?", answer: "Records, forms, documents and system data.", keywords: ["records|forms|documents|system"], hint: "The ingredients in the store room." },
+            { question: "What do \"rules and responsibilities\" cover?", answer: "Ownership, access and protection.", keywords: ["ownership|owner|own", "access", "protection|protect|security"], hint: "Who owns it, who can get in, how it's kept safe." }
+          ],
+          mcq: { question: "Which element is \"people, apps and devices that create data\"?", options: ["Data producers", "Data users", "Data sources", "Data engineering work"], answer: 0 }
+        },
+        {
+          id: "t5-5",
+          text: "The data journey is a sequence that asks \"What happens to the data?\"; the data ecosystem is about relationships and asks \"Who makes the data useful?\"",
+          keywords: ["journey", "sequence|steps|order|stages", "ecosystem", "relationships|relationship|connections", "who"],
+          hint: "One is a sequence (what happens?), the other is relationships (who…?).",
+          followUps: [
+            { question: "Which question does the data ecosystem ask?", answer: "Who makes the data useful?", keywords: ["who", "useful|usable"], hint: "It starts with \"Who…\"." }
+          ],
+          mcq: { question: "Which question does the data journey ask?", options: ["What happens to the data?", "Who makes the data useful?", "Who owns the data?", "How much does the data cost?"], answer: 0 }
+        },
+        {
+          id: "t5-6",
+          text: "The data engineer builds the road for data (trusted datasets, pipelines); the data analyst explains what happened (reports, dashboards); the data scientist predicts what will happen (models, forecasts).",
+          keywords: ["engineer", "build|builds|road", "analyst", "explain|explains|happened|past", "scientist", "predict|predicts|future|forecast"],
+          hint: "Memory trick: Past, Present, Future — who builds, who explains, who predicts?",
+          followUps: [
+            { question: "Who decides who can access data and how it's used?", answer: "The data owner.", keywords: ["owner"], hint: "Data ___." },
+            { question: "What does a database administrator do?", answer: "Keeps the database running, fast and secure.", keywords: ["running|run|available", "fast|performance|speed", "secure|security|safe"], hint: "Three things: r___, f___, s___." }
+          ],
+          mcq: { question: "Who usually builds business dashboards?", options: ["Data analyst", "Data engineer", "Database administrator", "Software engineer"], answer: 0 }
+        },
+        {
+          id: "t5-7",
+          text: "Upstream roles (data architect, software engineer, DevOps/SRE) give data or designs to the data engineer; downstream roles (data scientist, data analyst, ML engineer) take data from the data engineer.",
+          keywords: ["upstream", "architect|software|devops|sre", "downstream", "scientist|analyst|ml|machine learning"],
+          hint: "Think of a river: who gives to the DE (up), who takes from the DE (down)?",
+          followUps: [
+            { question: "What is the difference between an external-facing and an internal-facing data engineer?", answer: "External-facing serves public users (many users, stricter security); internal-facing serves the company (reports, dashboards, ML).", keywords: ["external", "public|users|customers", "internal", "company|organisation|organization|business|staff"], hint: "Facing outward to the ___, or inward to the ___." }
+          ],
+          mcq: { question: "Which role is DOWNSTREAM of the data engineer?", options: ["ML engineer", "Data architect", "Software engineer", "DevOps/SRE"], answer: 0 }
+        },
+        {
+          id: "t5-8",
+          text: "Data maturity has three stages — starting, scaling and leading — like learning to ride a bicycle (training wheels → riding alone → teaching others).",
+          keywords: ["starting|start", "scaling|scale", "leading|lead", "bicycle|bike|cycling"],
+          hint: "Memory trick: learning to ride a bicycle. S___, S___, L___.",
+          followUps: [
+            { question: "What does data maturity depend on?", answer: "How data is used — NOT company age or size.", keywords: ["used|use|uses|usage|using"], hint: "Exam trap: not age, not size…" },
+            { question: "What is the danger at the starting stage?", answer: "Jumping to ML too early.", keywords: ["ml|machine learning|ai", "early|soon|fast"], hint: "Taking off the training wheels too soon." },
+            { question: "What is the danger at the scaling stage?", answer: "Chasing trendy tools.", keywords: ["trendy|trend|trends|fashionable|new|shiny", "tools|tool|technology"], hint: "Wanting the newest, coolest ___." }
+          ],
+          mcq: { question: "A young start-up can be more data-mature than a 100-year-old company because maturity depends on…", options: ["How data is used", "Company age", "Company size", "Number of employees"], answer: 0 }
+        },
+        {
+          id: "t5-9",
+          text: "The data journey has six stages: generated, collected, organised, checked and prepared, made available, and used.",
+          keywords: ["generated|generate|generation", "collected|collect|collection", "organised|organized|organise|organize", "checked|check|prepared|prepare", "available|availability", "used|use|usage"],
+          hint: "Memory trick: \"Go Collect Our Clean Meal, Use it\".",
+          followUps: [
+            { question: "Course registration example: what happens at the \"organised\" stage?", answer: "It is linked to your student record.", keywords: ["link|linked|links|connect|connected|match", "record|records"], hint: "The course you picked gets attached to your ___." },
+            { question: "How many stages are in the Topic 3 lifecycle vs the Topic 5 journey?", answer: "Lifecycle has 5 stages (engineer's part); journey has 6 stages (whole organisation).", keywords: ["5|five", "6|six"], hint: "Don't mix them up: one is 5, one is 6." }
+          ],
+          mcq: { question: "Which journey stage comes right after \"Collected\"?", options: ["Organised", "Used", "Made available", "Generated"], answer: 0 }
+        },
+        {
+          id: "t5-10",
+          text: "The six data challenges are quality, integration, responsibility, privacy and security, timeliness, and resources and skills.",
+          keywords: ["quality", "integration|integrate", "responsibility|ownership", "privacy|security", "timeliness|timely|late", "resources|skills"],
+          hint: "Memory trick: \"Quiet Interns Rarely Push The Rules\".",
+          followUps: [
+            { question: "Which challenge is \"departments record things differently\"?", answer: "Integration.", keywords: ["integration|integrate"], hint: "Joining data from different places." },
+            { question: "Does more data always mean better information?", answer: "No — more data ≠ better information.", keywords: ["no|not"], hint: "Remember the \"≠\"." }
+          ],
+          mcq: { question: "\"Nobody knows who owns the data\" is which challenge?", options: ["Responsibility", "Quality", "Timeliness", "Integration"], answer: 0 }
+        },
+        {
+          id: "t5-11",
+          text: "Responsible data use has five rules: collect only what you need, use it for a clear purpose, protect it, give access only to authorised people, and fix wrong data and explain how it's used.",
+          keywords: ["collect|need", "purpose", "protect|protection|secure", "access|authorised|authorized", "fix|correct|explain"],
+          hint: "Collect…, purpose…, protect…, access…, fix & explain.",
+          followUps: [
+            { question: "How much data should you collect?", answer: "Only what you need.", keywords: ["only|minimum|necessary", "need|needed"], hint: "Not everything — just…" }
+          ],
+          mcq: { question: "Which is a rule of responsible data use?", options: ["Give access only to authorised people", "Collect as much data as possible", "Keep wrong data to avoid changes", "Share data freely with everyone"], answer: 0 }
+        },
+        {
+          id: "t5-12",
+          text: "data.gov.my is Malaysia's open data portal: produced by ministries and agencies, used by citizens, students, researchers, developers and businesses, and delivered through datasets, dashboards and an API.",
+          keywords: ["data gov my|open data|portal", "ministries|ministry|agencies|agency|government", "citizens|students|researchers|developers|businesses|public", "datasets|dashboards|api"],
+          hint: "Ask: who produces it, who uses it, how is it delivered?",
+          followUps: [
+            { question: "Name one concern for data.gov.my.", answer: "Accuracy, timeliness, metadata, licensing, privacy or accountability.", keywords: ["accuracy|accurate|timeliness|timely|metadata|licensing|license|licence|privacy|accountability"], hint: "Six concerns: a___, t___, m___, l___, p___, a___." },
+            { question: "Which Malaysian case raises privacy questions because of personalisation?", answer: "Astro", keywords: ["astro"], hint: "A TV / media company." },
+            { question: "Which Malaysian case connects millions of students and teachers?", answer: "DELIMa", keywords: ["delima"], hint: "The Ministry of Education's digital learning platform." }
+          ],
+          mcq: { question: "What is the main Malaysian case study in Topic 5?", options: ["data.gov.my", "Uber", "KKM COVID-19 open data", "Google Flu Trends"], answer: 0 }
+        }
+      ]
+    }
+  ]
+};
+
+/* Storage: notes + progress in localStorage (with safe fallbacks). */
+const Store = (() => {
+  const KEY_DATA = "memo.data.v1";
+  const KEY_PROG = "memo.progress.v1";
+  const KEY_THEME = "memo.theme";
+  let data = null;
+  let progress = {};
+
+  function safeGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  function safeSet(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
+  function safeDel(k) { try { localStorage.removeItem(k); } catch (e) { /* ignore */ } }
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function uid(prefix) { return (prefix || "id") + "-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  /* Keywords may be given as "a|b|c" strings or as ["a","b","c"] arrays. Store as arrays. */
+  function normKeywords(kws) {
+    if (!Array.isArray(kws)) kws = typeof kws === "string" ? kws.split(/\n/) : [];
+    return kws.map(k => (Array.isArray(k) ? k : String(k).split("|"))
+      .map(s => String(s).trim()).filter(Boolean)).filter(g => g.length);
+  }
+
+  function sanitize(raw) {
+    const out = { topics: [] };
+    const topics = raw && Array.isArray(raw.topics) ? raw.topics : [];
+    const seen = new Set();
+    topics.forEach(t => {
+      if (!t || typeof t !== "object") return;
+      let tid = String(t.id || uid("topic")); if (seen.has(tid)) tid = uid("topic"); seen.add(tid);
+      const topic = { id: tid, name: String(t.name || "Untitled topic"), statements: [] };
+      (Array.isArray(t.statements) ? t.statements : []).forEach(s => {
+        if (!s || !s.text) return;
+        let sid = String(s.id || uid("st")); if (seen.has(sid)) sid = uid("st"); seen.add(sid);
+        const mcq = s.mcq && Array.isArray(s.mcq.options) ? {
+          question: String(s.mcq.question || ""),
+          options: s.mcq.options.slice(0, 4).map(String),
+          answer: Math.max(0, Math.min(3, parseInt(s.mcq.answer, 10) || 0))
+        } : null;
+        topic.statements.push({
+          id: sid,
+          text: String(s.text),
+          keywords: normKeywords(s.keywords),
+          hint: String(s.hint || ""),
+          followUps: (Array.isArray(s.followUps) ? s.followUps : []).slice(0, 3)
+            .filter(f => f && f.question)
+            .map(f => ({ question: String(f.question), answer: String(f.answer || ""), keywords: normKeywords(f.keywords), hint: String(f.hint || "") })),
+          mcq: mcq && mcq.options.length === 4 && mcq.question ? mcq : null
+        });
+      });
+      out.topics.push(topic);
+    });
+    return out;
+  }
+
+  function load() {
+    const raw = safeGet(KEY_DATA);
+    if (raw) { try { data = sanitize(JSON.parse(raw)); } catch (e) { data = null; } }
+    if (!data) data = sanitize(clone(window.DEFAULT_DATA || { topics: [] }));
+    try { progress = JSON.parse(safeGet(KEY_PROG) || "{}") || {}; } catch (e) { progress = {}; }
+  }
+
+  function save() { return safeSet(KEY_DATA, JSON.stringify(data)); }
+  function saveProgress() { safeSet(KEY_PROG, JSON.stringify(progress)); }
+
+  function topics() { return data.topics; }
+  function topic(id) { return data.topics.find(t => t.id === id) || null; }
+
+  function topicProgress(id) {
+    const t = topic(id);
+    const p = progress[id] || {};
+    const scores = p.scores || {};
+    if (!t || !t.statements.length) return { pct: 0, mastered: 0, total: 0, quizBest: p.quizBest || 0, studied: false };
+    let sum = 0, mastered = 0;
+    t.statements.forEach(s => { const v = scores[s.id] || 0; sum += v; if (v > 0) mastered++; });
+    return { pct: Math.round(sum / t.statements.length), mastered, total: t.statements.length, quizBest: p.quizBest || 0, studied: !!p.lastStudied };
+  }
+
+  function recordStudy(topicId, scoreMap) {
+    const p = progress[topicId] || (progress[topicId] = {});
+    p.scores = Object.assign({}, p.scores || {}, scoreMap);
+    p.lastStudied = Date.now();
+    saveProgress();
+  }
+
+  function recordQuiz(topicId, score) {
+    const p = progress[topicId] || (progress[topicId] = {});
+    const isBest = score > (p.quizBest || 0);
+    if (isBest) p.quizBest = score;
+    saveProgress();
+    return isBest;
+  }
+
+  function deleteTopicProgress(id) { delete progress[id]; saveProgress(); }
+
+  function replaceAll(newData) { data = sanitize(newData); save(); }
+  function resetDefaults() { safeDel(KEY_DATA); safeDel(KEY_PROG); progress = {}; data = sanitize(clone(window.DEFAULT_DATA)); save(); }
+  function exportJSON() { return JSON.stringify(data, null, 2); }
+
+  function getTheme() { return safeGet(KEY_THEME); }
+  function setTheme(t) { safeSet(KEY_THEME, t); }
+
+  return { load, save, topics, topic, uid, sanitize, normKeywords, topicProgress, recordStudy, recordQuiz,
+    deleteTopicProgress, replaceAll, resetDefaults, exportJSON, getTheme, setTheme };
+})();
+
+/* Answer checker: normalise text, match keywords (with synonyms + fuzzy spelling). */
+const Checker = (() => {
+  function normalize(s) {
+    return String(s || "").toLowerCase()
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ").trim();
+  }
+  function tokens(s) { const n = normalize(s); return n ? n.split(" ") : []; }
+
+  function levenshtein(a, b) {
+    if (a === b) return 0;
+    const m = a.length, n = b.length;
+    if (!m) return n; if (!n) return m;
+    let prev = new Array(n + 1), cur = new Array(n + 1);
+    for (let j = 0; j <= n; j++) prev[j] = j;
+    for (let i = 1; i <= m; i++) {
+      cur[0] = i;
+      for (let j = 1; j <= n; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + cost);
+      }
+      [prev, cur] = [cur, prev];
+    }
+    return prev[n];
+  }
+
+  /* Allowed typos: 7+ letters → 2, 4–6 letters → 1, shorter or numbers → exact. */
+  function maxDistance(len) { return len >= 7 ? 2 : len >= 4 ? 1 : 0; }
+
+  function wordMatches(tok, word) {
+    if (tok === word) return true;
+    const isNum = /^\d+$/.test(word) || /^\d+$/.test(tok);
+    if (isNum) return false;
+    // allow word inside a longer form, e.g. "store" in "stored", "schedule" in "scheduler"
+    if (word.length >= 5 && tok.length > word.length && tok.startsWith(word)) return true;
+    const d = maxDistance(word.length);
+    if (!d || Math.abs(tok.length - word.length) > d) return false;
+    return levenshtein(tok, word) <= d;
+  }
+
+  /* A variant (possibly multi-word) matches if every word appears somewhere in the answer. */
+  function variantMatches(answerTokens, variant) {
+    const vt = tokens(variant);
+    if (!vt.length) return false;
+    // also allow the variant written as one joined word (e.g. "dataops" vs "data ops")
+    const joined = answerTokens.join("");
+    if (vt.length > 1 && joined.includes(vt.join(""))) return true;
+    return vt.every(w => answerTokens.some(t => wordMatches(t, w)));
+  }
+
+  /**
+   * @param {string} answer  user's text
+   * @param {Array<Array<string>>} keywordGroups  each group = list of accepted variants
+   * @returns {{ratio:number,pct:number,grade:'correct'|'close'|'wrong',found:string[][],missing:string[][]}}
+   */
+  function check(answer, keywordGroups) {
+    const at = tokens(answer);
+    const found = [], missing = [];
+    (keywordGroups || []).forEach(g => {
+      (g.some(v => variantMatches(at, v)) ? found : missing).push(g);
+    });
+    const total = found.length + missing.length;
+    const ratio = total ? found.length / total : 0;
+    const grade = ratio >= 0.7 ? "correct" : ratio >= 0.4 ? "close" : "wrong";
+    return { ratio, pct: Math.round(ratio * 100), grade, found, missing };
+  }
+
+  return { normalize, tokens, levenshtein, check };
+})();
+
+/* Memorisation mode: read → hide & test → check → follow-ups → next. */
+const Study = (() => {
+  const MAX_ATTEMPTS = 3;
+  const ATTEMPT_SCORE = [100, 60, 30]; // 1st, 2nd, 3rd attempt; fail = 0
+  let S = null;
+
+  const GRADE = {
+    correct: { cls: "ok", icon: "✓", label: "CORRECT" },
+    close: { cls: "warn", icon: "≈", label: "ALMOST" },
+    wrong: { cls: "bad", icon: "✗", label: "WRONG" }
+  };
+
+  function start(topicId) {
+    const topic = Store.topic(topicId);
+    if (!topic || !topic.statements.length) { App.toast("This topic has no statements yet."); return; }
+    S = {
+      topic,
+      queue: topic.statements.map(s => ({ sid: s.id, repeat: false })),
+      qi: 0,
+      results: {},      // sid -> { score, attempts, status:'mastered'|'repeat', repeatPassed, fu: [] }
+      phase: "read",    // read | test | fu
+      fuIndex: 0,
+      attempt: 0,
+      resolved: null,   // null | 'pass' | 'fail'
+      last: null,       // last check result
+      draft: ""
+    };
+    App.show("study");
+    render();
+  }
+
+  function isActive() { return !!S && !S.finished; }
+  function stop() { S = null; }
+
+  const cur = () => S.queue[S.qi];
+  const stmt = () => S.topic.statements.find(s => s.id === cur().sid);
+  const fu = () => stmt().followUps[S.fuIndex];
+  const activeKeywords = () => (S.phase === "fu" ? fu().keywords : stmt().keywords);
+
+  function render() {
+    const root = App.root();
+    const st = stmt();
+    const item = cur();
+    const firstRound = S.topic.statements.length;
+    const totalItems = S.queue.length;
+    const pct = Math.round((S.qi / totalItems) * 100);
+    let body = "";
+
+    if (S.phase === "read") {
+      body = `
+        <div class="card statement-card">
+          <p class="label">Read and memorise this statement</p>
+          <p class="statement-text">${App.esc(st.text)}</p>
+        </div>
+        <div class="actions"><button class="btn primary big" id="btnHide" autofocus>🙈 Hide &amp; Test</button></div>`;
+    } else {
+      const isFu = S.phase === "fu";
+      const q = isFu
+        ? `<div class="card question-card">
+             <p class="label">Follow-up question ${S.fuIndex + 1} of ${st.followUps.length}</p>
+             <p class="statement-text">${App.esc(fu().question)}</p>
+           </div>`
+        : `<div class="card hidden-card" aria-label="Statement hidden">
+             <p class="label">🔒 Statement hidden</p>
+             <p class="muted">Write what you remember / understand, in your own words.</p>
+           </div>`;
+      const done = !!S.resolved;
+      body = `${q}
+        <label class="label" for="answer">Your answer <span class="muted">(Ctrl+Enter to check)</span></label>
+        <textarea id="answer" class="answer-box" rows="6" ${done ? "disabled" : ""}
+          placeholder="Type your answer here…">${App.esc(S.draft)}</textarea>
+        <p class="attempts" aria-live="polite">Attempt ${Math.min(S.attempt + (done ? 0 : 1), MAX_ATTEMPTS)} of ${MAX_ATTEMPTS}</p>
+        ${feedbackHTML()}
+        <div class="actions">
+          ${done
+            ? `<button class="btn primary big" id="btnNext">${nextLabel()} →</button>`
+            : `<button class="btn primary big" id="btnCheck">Check answer</button>
+               <button class="btn" id="btnGiveUp" title="Counts as a wrong attempt">I don't remember</button>`}
+        </div>`;
+    }
+
+    root.innerHTML = `
+      <section class="study">
+        <div class="session-head">
+          <div>
+            <p class="eyebrow">${App.esc(S.topic.name)}</p>
+            <h1>Statement ${Math.min(S.qi + 1, totalItems)} of ${totalItems}
+              ${item.repeat ? '<span class="badge warn">Repeat round</span>' : ""}</h1>
+          </div>
+          <button class="btn ghost" data-nav="home">✕ Quit</button>
+        </div>
+        <div class="progress" role="progressbar" aria-label="Session progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"><div style="width:${pct}%"></div></div>
+        <p class="muted small">${firstRound} statements${totalItems > firstRound ? ` + ${totalItems - firstRound} to repeat` : ""}</p>
+        ${body}
+      </section>`;
+
+    bind();
+  }
+
+  function nextLabel() {
+    const st = stmt();
+    if (S.phase === "test" && S.resolved === "pass" && st.followUps.length) return "Go to follow-up questions";
+    if (S.phase === "fu" && S.fuIndex < st.followUps.length - 1) return "Next follow-up question";
+    return S.qi < S.queue.length - 1 ? "Next statement" : "See results";
+  }
+
+  function chipsHTML(groups, cls, icon, mask) {
+    return groups.map(g => {
+      const shown = mask ? maskWord(g[0]) : g[0];
+      const syn = !mask && g.length > 1 ? ` <span class="syn">(${g.slice(1).map(App.esc).join(", ")})</span>` : "";
+      return `<li class="chip ${cls}"><span aria-hidden="true">${icon}</span> ${App.esc(shown)}${syn}</li>`;
+    }).join("");
+  }
+  function maskWord(w) {
+    return w.split(" ").map(p => p.length <= 1 ? p : p[0] + "•".repeat(p.length - 1)).join(" ");
+  }
+
+  function feedbackHTML() {
+    const r = S.last;
+    if (!r) return "";
+    const g = GRADE[r.grade];
+    const isFu = S.phase === "fu";
+    const st = stmt();
+    const done = !!S.resolved;
+    const mask = !done; // hide missing keywords while you can still retry
+    let extra = "";
+    if (S.resolved === "pass") {
+      extra = isFu
+        ? `<div class="compare"><p class="label">Model answer</p><p>${App.esc(fu().answer || "—")}</p></div>`
+        : `<div class="compare"><p class="label">Original statement — compare with yours</p><p>${App.esc(st.text)}</p></div>`;
+    } else if (S.resolved === "fail") {
+      extra = `<div class="reveal"><p class="label">❌ 3 attempts used — here is the answer</p>
+        <p>${App.esc(isFu ? (fu().answer || "—") : st.text)}</p>
+        ${isFu ? "" : `<p class="small"><strong>Marked “needs repeat”.</strong> ${cur().repeat ? "Review it again later." : "It will come back at the end of this session."}</p>`}
+      </div>`;
+    } else {
+      const hint = isFu ? fu().hint : st.hint;
+      extra = `<div class="hint"><p class="label">💡 Hint</p><p>${App.esc(hint || "Re-read the keyword list above and try again.")}</p>
+        <p class="small">You have ${MAX_ATTEMPTS - S.attempt} attempt${MAX_ATTEMPTS - S.attempt === 1 ? "" : "s"} left. Edit your answer and check again.</p></div>`;
+    }
+    return `
+      <div class="feedback ${g.cls}" role="status" aria-live="polite">
+        <p class="grade"><span class="grade-icon" aria-hidden="true">${g.icon}</span> ${g.label}
+          <span class="grade-pct">${r.pct}% of keywords (${r.found.length}/${r.found.length + r.missing.length})</span></p>
+        ${r.found.length ? `<p class="label">Keywords found</p><ul class="chips">${chipsHTML(r.found, "ok", "✓", false)}</ul>` : ""}
+        ${r.missing.length ? `<p class="label">Keywords missing${mask ? " (hidden until you finish)" : ""}</p><ul class="chips">${chipsHTML(r.missing, "bad", "✗", mask)}</ul>` : ""}
+        ${extra}
+      </div>`;
+  }
+
+  function bind() {
+    const $ = id => document.getElementById(id);
+    if ($("btnHide")) { $("btnHide").onclick = () => { S.phase = "test"; resetQuestion(); render(); focusAnswer(); }; $("btnHide").focus(); }
+    const ta = $("answer");
+    if (ta) {
+      ta.oninput = () => { S.draft = ta.value; };
+      ta.onkeydown = e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); submit(false); } };
+    }
+    if ($("btnCheck")) $("btnCheck").onclick = () => submit(false);
+    if ($("btnGiveUp")) $("btnGiveUp").onclick = () => submit(true);
+    if ($("btnNext")) { $("btnNext").onclick = next; $("btnNext").focus(); }
+  }
+  function focusAnswer() { const ta = document.getElementById("answer"); if (ta) ta.focus(); }
+  function resetQuestion() { S.attempt = 0; S.resolved = null; S.last = null; S.draft = ""; }
+
+  function submit(giveUp) {
+    const text = giveUp ? "" : S.draft.trim();
+    if (!giveUp && !text) { App.toast("Write your answer first (or press “I don't remember”)."); focusAnswer(); return; }
+    S.attempt++;
+    const r = Checker.check(text, activeKeywords());
+    S.last = r;
+    if (r.grade === "correct") S.resolved = "pass";
+    else if (S.attempt >= MAX_ATTEMPTS) S.resolved = "fail";
+    if (S.resolved) record();
+    render();
+    if (!S.resolved) focusAnswer();
+  }
+
+  function record() {
+    const st = stmt();
+    const item = cur();
+    const score = S.resolved === "pass" ? ATTEMPT_SCORE[S.attempt - 1] : 0;
+    if (S.phase === "test") {
+      if (!item.repeat) {
+        S.results[st.id] = { score, attempts: S.attempt, status: S.resolved === "pass" ? "mastered" : "repeat", repeatPassed: false, fu: [] };
+        if (S.resolved === "fail") S.queue.push({ sid: st.id, repeat: true });
+      } else if (S.resolved === "pass") {
+        S.results[st.id].repeatPassed = true;
+      }
+    } else {
+      const res = S.results[st.id];
+      if (res && res.fu[S.fuIndex] === undefined) res.fu[S.fuIndex] = { score, passed: S.resolved === "pass" };
+    }
+  }
+
+  function next() {
+    const st = stmt();
+    if (S.phase === "test" && S.resolved === "pass" && st.followUps.length) {
+      S.phase = "fu"; S.fuIndex = 0; resetQuestion(); render(); focusAnswer(); return;
+    }
+    if (S.phase === "fu" && S.fuIndex < st.followUps.length - 1) {
+      S.fuIndex++; resetQuestion(); render(); focusAnswer(); return;
+    }
+    S.qi++;
+    if (S.qi >= S.queue.length) { finish(); return; }
+    S.phase = "read"; S.fuIndex = 0; resetQuestion(); render();
+  }
+
+  function finish() {
+    S.finished = true;
+    const t = S.topic;
+    const scoreMap = {};
+    let sum = 0;
+    const mastered = [], repeat = [];
+    let fuDone = 0, fuPassed = 0, fuSum = 0;
+    t.statements.forEach(s => {
+      const r = S.results[s.id];
+      scoreMap[s.id] = r.score;
+      sum += r.score;
+      (r.status === "mastered" ? mastered : repeat).push({ s, r });
+      r.fu.forEach(f => { if (f) { fuDone++; fuSum += f.score; if (f.passed) fuPassed++; } });
+    });
+    const sessionPct = Math.round(sum / t.statements.length);
+    Store.recordStudy(t.id, scoreMap);
+    const prog = Store.topicProgress(t.id);
+    const first = mastered.filter(x => x.r.attempts === 1).length;
+
+    const li = ({ s, r }) => `<li><span class="pill ${r.status === "mastered" ? "ok" : "bad"}">${r.status === "mastered" ? `✓ ${r.score}%` : "✗ 0%"}</span>
+      <span>${App.esc(s.text)}</span>
+      ${r.status === "mastered" ? `<span class="muted small">attempt ${r.attempts}</span>` : `<span class="muted small">${r.repeatPassed ? "got it in the repeat round" : "still needs work"}</span>`}</li>`;
+
+    App.root().innerHTML = `
+      <section class="results">
+        <p class="eyebrow">${App.esc(t.name)}</p>
+        <h1>Session complete 🎉</h1>
+        <div class="stats">
+          <div class="stat"><span class="stat-num">${sessionPct}%</span><span class="stat-lbl">Session score</span></div>
+          <div class="stat"><span class="stat-num">${mastered.length}/${t.statements.length}</span><span class="stat-lbl">Mastered</span></div>
+          <div class="stat"><span class="stat-num">${first}</span><span class="stat-lbl">Right on 1st try</span></div>
+          <div class="stat"><span class="stat-num">${fuDone ? fuPassed + "/" + fuDone : "—"}</span><span class="stat-lbl">Follow-ups correct</span></div>
+        </div>
+        <div class="card">
+          <p class="label">Topic memorisation</p>
+          <div class="progress big" role="progressbar" aria-label="Topic memorisation" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${prog.pct}"><div style="width:${prog.pct}%"></div></div>
+          <p class="small muted">${prog.pct}% · Scoring: 1st attempt 100%, 2nd 60%, 3rd 30%, failed 0%.</p>
+        </div>
+        <h2>✓ Mastered (${mastered.length})</h2>
+        ${mastered.length ? `<ul class="result-list">${mastered.map(li).join("")}</ul>` : `<p class="muted">None yet — keep going!</p>`}
+        <h2>↻ Needs repeat (${repeat.length})</h2>
+        ${repeat.length ? `<ul class="result-list">${repeat.map(li).join("")}</ul>` : `<p class="muted">Nothing — excellent!</p>`}
+        <div class="actions">
+          <button class="btn primary" id="again">Study again</button>
+          <button class="btn" id="toQuiz">Play quiz</button>
+          <button class="btn ghost" data-nav="home">Home</button>
+        </div>
+      </section>`;
+    document.getElementById("again").onclick = () => start(t.id);
+    document.getElementById("toQuiz").onclick = () => Quiz.start(t.id);
+    S = null;
+  }
+
+  return { start, stop, isActive };
+})();
+
+/* Quiz (game) mode: MCQs, timer, streak, sound. */
+const Quiz = (() => {
+  const SECONDS = 20;
+  let Q = null, timer = null, audio = null;
+
+  function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+  function beep(ok) {
+    if (Q && Q.muted) return;
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      const notes = ok ? [660, 880] : [220, 160];
+      notes.forEach((f, i) => {
+        const o = audio.createOscillator(), g = audio.createGain();
+        o.type = ok ? "sine" : "square"; o.frequency.value = f;
+        const t = audio.currentTime + i * 0.12;
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(ok ? 0.25 : 0.12, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+        o.connect(g).connect(audio.destination); o.start(t); o.stop(t + 0.2);
+      });
+    } catch (e) { /* audio not available */ }
+  }
+
+  function start(topicId) {
+    const topic = Store.topic(topicId);
+    if (!topic) return;
+    const usable = topic.statements.filter(s => s.mcq);
+    const missing = topic.statements.length - usable.length;
+    if (!usable.length) { App.toast("No statement in this topic has an MCQ yet. Add one in Manage Notes."); return; }
+    if (missing) App.toast(`${missing} statement(s) have no MCQ and were left out. Add them in Manage Notes.`);
+    const items = shuffle(usable).map(s => {
+      const opts = shuffle(s.mcq.options.map((text, i) => ({ text, correct: i === s.mcq.answer })));
+      return { s, question: s.mcq.question, opts };
+    });
+    Q = { topic, items, i: 0, score: 0, correct: 0, streak: 0, bestStreak: 0, wrong: [], answered: false,
+      left: SECONDS, muted: Q ? Q.muted : false };
+    App.show("quiz");
+    renderQuestion();
+  }
+
+  function stop() { clearInterval(timer); timer = null; Q = null; }
+  function isActive() { return !!Q && !Q.finished; }
+
+  function renderQuestion() {
+    const it = Q.items[Q.i];
+    Q.answered = false; Q.left = SECONDS;
+    App.root().innerHTML = `
+      <section class="quiz">
+        <div class="session-head">
+          <div>
+            <p class="eyebrow">${App.esc(Q.topic.name)} · Quiz</p>
+            <h1>Question ${Q.i + 1} of ${Q.items.length}</h1>
+          </div>
+          <div class="quiz-tools">
+            <button class="btn ghost" id="mute" aria-pressed="${Q.muted}">${Q.muted ? "🔇 Sound off" : "🔊 Sound on"}</button>
+            <button class="btn ghost" data-nav="home">✕ Quit</button>
+          </div>
+        </div>
+        <div class="hud">
+          <span class="hud-item">⭐ <strong id="score">${Q.score}</strong> pts</span>
+          <span class="hud-item ${Q.streak >= 2 ? "hot" : ""}" id="streakBox">🔥 Streak <strong id="streak">${Q.streak}</strong></span>
+          <span class="hud-item">⏱ <strong id="secs">${SECONDS}</strong>s</span>
+        </div>
+        <div class="timer" aria-hidden="true"><div id="timerBar"></div></div>
+        <div class="card question-card"><p class="statement-text">${App.esc(it.question)}</p></div>
+        <div class="options" role="group" aria-label="Answer options">
+          ${it.opts.map((o, k) => `<button class="option" data-k="${k}"><span class="opt-key">${"ABCD"[k]}</span><span>${App.esc(o.text)}</span></button>`).join("")}
+        </div>
+        <div id="qfb" role="status" aria-live="polite"></div>
+      </section>`;
+    document.querySelectorAll(".option").forEach(b => { b.onclick = () => answer(+b.dataset.k); });
+    document.getElementById("mute").onclick = () => { Q.muted = !Q.muted; const m = document.getElementById("mute"); m.textContent = Q.muted ? "🔇 Sound off" : "🔊 Sound on"; m.setAttribute("aria-pressed", Q.muted); };
+    const t0 = Date.now();
+    clearInterval(timer);
+    timer = setInterval(() => {
+      if (!Q) { clearInterval(timer); return; }
+      Q.left = Math.max(0, SECONDS - (Date.now() - t0) / 1000);
+      const bar = document.getElementById("timerBar"), secs = document.getElementById("secs");
+      if (bar) { bar.style.width = (Q.left / SECONDS * 100) + "%"; bar.classList.toggle("low", Q.left <= 5); }
+      if (secs) secs.textContent = Math.ceil(Q.left);
+      if (Q.left <= 0) answer(null);
+    }, 100);
+  }
+
+  function answer(k) {
+    if (!Q || Q.answered) return;
+    Q.answered = true;
+    clearInterval(timer);
+    const it = Q.items[Q.i];
+    const ok = k !== null && it.opts[k].correct;
+    let gained = 0;
+    if (ok) {
+      Q.streak++; Q.bestStreak = Math.max(Q.bestStreak, Q.streak); Q.correct++;
+      gained = 100 + Math.round(Q.left * 5) + (Q.streak - 1) * 20;
+      Q.score += gained;
+    } else {
+      Q.streak = 0;
+      Q.wrong.push({ it, chosen: k === null ? null : it.opts[k].text });
+    }
+    beep(ok);
+    document.querySelectorAll(".option").forEach((b, idx) => {
+      b.disabled = true;
+      if (it.opts[idx].correct) { b.classList.add("correct"); b.insertAdjacentHTML("beforeend", '<span class="opt-tag">✓ Correct answer</span>'); }
+      else if (idx === k) { b.classList.add("wrong"); b.insertAdjacentHTML("beforeend", '<span class="opt-tag">✗ Your choice</span>'); }
+    });
+    const last = Q.i === Q.items.length - 1;
+    document.getElementById("qfb").innerHTML = `
+      <div class="feedback ${ok ? "ok pop" : "bad shake"}">
+        <p class="grade"><span class="grade-icon" aria-hidden="true">${ok ? "✓" : "✗"}</span>
+          ${ok ? `CORRECT! +${gained} pts${Q.streak >= 2 ? ` · 🔥 ${Q.streak} in a row` : ""}` : (k === null ? "TIME'S UP!" : "WRONG")}</p>
+        <p class="small"><strong>Statement:</strong> ${App.esc(it.s.text)}</p>
+      </div>
+      <div class="actions"><button class="btn primary big" id="qnext">${last ? "See results" : "Next question"} →</button></div>`;
+    document.getElementById("score").textContent = Q.score;
+    document.getElementById("streak").textContent = Q.streak;
+    document.getElementById("streakBox").classList.toggle("hot", Q.streak >= 2);
+    const nb = document.getElementById("qnext");
+    nb.onclick = () => { Q.i++; if (Q.i >= Q.items.length) finish(); else renderQuestion(); };
+    nb.focus();
+  }
+
+  function finish() {
+    Q.finished = true;
+    const pct = Math.round(Q.correct / Q.items.length * 100);
+    const isBest = Store.recordQuiz(Q.topic.id, Q.score);
+    const tid = Q.topic.id;
+    App.root().innerHTML = `
+      <section class="results">
+        <p class="eyebrow">${App.esc(Q.topic.name)} · Quiz</p>
+        <h1>Quiz complete ${pct >= 80 ? "🏆" : pct >= 50 ? "👍" : "💪"}</h1>
+        ${isBest ? '<p class="badge ok big-badge">★ New best score!</p>' : ""}
+        <div class="stats">
+          <div class="stat"><span class="stat-num">${Q.score}</span><span class="stat-lbl">Points</span></div>
+          <div class="stat"><span class="stat-num">${Q.correct}/${Q.items.length}</span><span class="stat-lbl">Correct (${pct}%)</span></div>
+          <div class="stat"><span class="stat-num">${Q.bestStreak}</span><span class="stat-lbl">Best streak</span></div>
+        </div>
+        <h2>Review mistakes (${Q.wrong.length})</h2>
+        ${Q.wrong.length ? `<ul class="result-list">${Q.wrong.map(w => `<li>
+            <span class="pill bad">✗</span>
+            <span><strong>${App.esc(w.it.question)}</strong><br>
+            Your answer: ${w.chosen === null ? "<em>no answer (time's up)</em>" : App.esc(w.chosen)}<br>
+            Correct: ${App.esc(w.it.opts.find(o => o.correct).text)}</span></li>`).join("")}</ul>`
+          : '<p class="muted">No mistakes — perfect!</p>'}
+        <div class="actions">
+          <button class="btn primary" id="qagain">Play again</button>
+          <button class="btn" id="qstudy">Memorise this topic</button>
+          <button class="btn ghost" data-nav="home">Home</button>
+        </div>
+      </section>`;
+    document.getElementById("qagain").onclick = () => start(tid);
+    document.getElementById("qstudy").onclick = () => Study.start(tid);
+  }
+
+  return { start, stop, isActive };
+})();
+
+/* Manage Notes: add / edit / delete topics & statements, export / import JSON. */
+const Manage = (() => {
+  let selTopic = null;   // topic id
+  let editing = null;    // statement id | "new" | null
+
+  const kwToText = groups => (groups || []).map(g => g.join(" | ")).join("\n");
+  const textToKw = txt => String(txt || "").split("\n").map(l => l.split(/[|,]/).map(s => s.trim()).filter(Boolean)).filter(g => g.length);
+
+  function open() {
+    const ts = Store.topics();
+    if (!selTopic || !Store.topic(selTopic)) selTopic = ts.length ? ts[0].id : null;
+    App.show("manage");
+    render();
+  }
+
+  function render() {
+    const ts = Store.topics();
+    const t = selTopic ? Store.topic(selTopic) : null;
+    App.root().innerHTML = `
+      <section class="manage">
+        <h1>Manage Notes</h1>
+        <div class="toolbar">
+          <button class="btn" id="mExport">⬇ Export JSON</button>
+          <label class="btn" for="mImport">⬆ Import JSON</label>
+          <input type="file" id="mImport" accept=".json,application/json" class="sr-only">
+          <button class="btn ghost danger" id="mReset">Reset to default notes</button>
+        </div>
+
+        <div class="manage-grid">
+          <div class="card">
+            <h2>Topics</h2>
+            <ul class="topic-list">
+              ${ts.map(x => `<li><button class="topic-pick ${x.id === selTopic ? "active" : ""}" data-tid="${App.esc(x.id)}">${App.esc(x.name)} <span class="muted small">(${x.statements.length})</span></button></li>`).join("") || '<li class="muted">No topics yet.</li>'}
+            </ul>
+            <form id="fNewTopic" class="inline-form">
+              <label class="sr-only" for="newTopicName">New topic name</label>
+              <input id="newTopicName" placeholder="New topic name" required>
+              <button class="btn primary">+ Add topic</button>
+            </form>
+          </div>
+
+          <div class="card">
+            ${t ? `
+              <form id="fRename" class="inline-form">
+                <label class="sr-only" for="topicName">Topic name</label>
+                <input id="topicName" value="${App.esc(t.name)}" required>
+                <button class="btn">Save name</button>
+                <button type="button" class="btn ghost danger" id="delTopic">Delete topic</button>
+              </form>
+              <h2>Statements (${t.statements.length})</h2>
+              <ol class="st-list">
+                ${t.statements.map(s => `<li>
+                  <span class="st-text">${App.esc(s.text)}</span>
+                  <span class="st-meta small muted">${s.keywords.length} keywords · ${s.followUps.length} follow-up(s) · ${s.mcq ? "MCQ ✓" : '<strong class="bad-text">no MCQ</strong>'}</span>
+                  <span class="st-actions"><button class="btn small" data-edit="${App.esc(s.id)}">Edit</button><button class="btn small ghost danger" data-del="${App.esc(s.id)}">Delete</button></span>
+                </li>`).join("")}
+              </ol>
+              <button class="btn primary" id="addSt">+ Add statement</button>
+              ${editing ? editorHTML(t) : ""}
+            ` : '<p class="muted">Create a topic to start adding statements.</p>'}
+          </div>
+        </div>
+      </section>`;
+    bind();
+    if (editing) { const f = document.getElementById("fSt"); if (f) f.scrollIntoView({ block: "start" }); }
+  }
+
+  function editorHTML(t) {
+    const s = editing === "new" ? { text: "", keywords: [], hint: "", followUps: [], mcq: null } : t.statements.find(x => x.id === editing);
+    if (!s) return "";
+    const fus = [0, 1, 2].map(i => s.followUps[i] || { question: "", answer: "", keywords: [], hint: "" });
+    const mcq = s.mcq || { question: "", options: ["", "", "", ""], answer: 0 };
+    return `
+      <form id="fSt" class="editor" novalidate>
+        <h2>${editing === "new" ? "New statement" : "Edit statement"}</h2>
+        <label for="eText">Statement (full text) *</label>
+        <textarea id="eText" rows="3" required>${App.esc(s.text)}</textarea>
+
+        <label for="eKw">Required keywords * <span class="muted small">— one per line; separate synonyms with | or ,</span></label>
+        <textarea id="eKw" rows="4" placeholder="storage | store&#10;ingestion | ingest" required>${App.esc(kwToText(s.keywords))}</textarea>
+
+        <label for="eHint">Hint (shown when wrong)</label>
+        <input id="eHint" value="${App.esc(s.hint)}">
+
+        <fieldset>
+          <legend>Follow-up questions (1–3) *</legend>
+          ${fus.map((f, i) => `
+            <div class="fu-block">
+              <p class="label">Follow-up ${i + 1}${i ? " (optional)" : ""}</p>
+              <label for="fq${i}">Question</label><input id="fq${i}" value="${App.esc(f.question)}">
+              <label for="fa${i}">Model answer</label><input id="fa${i}" value="${App.esc(f.answer)}">
+              <label for="fk${i}">Keywords <span class="muted small">(one per line, synonyms with |)</span></label>
+              <textarea id="fk${i}" rows="2">${App.esc(kwToText(f.keywords))}</textarea>
+              <label for="fh${i}">Hint</label><input id="fh${i}" value="${App.esc(f.hint)}">
+            </div>`).join("")}
+        </fieldset>
+
+        <fieldset>
+          <legend>Multiple-choice question *</legend>
+          <label for="mq">Question</label><input id="mq" value="${App.esc(mcq.question)}">
+          ${[0, 1, 2, 3].map(i => `
+            <div class="mcq-opt">
+              <input type="radio" name="mcqAns" id="mr${i}" value="${i}" ${mcq.answer === i ? "checked" : ""} aria-label="Option ${"ABCD"[i]} is correct">
+              <label for="mo${i}" class="sr-only">Option ${"ABCD"[i]}</label>
+              <input id="mo${i}" placeholder="Option ${"ABCD"[i]}" value="${App.esc(mcq.options[i] || "")}">
+            </div>`).join("")}
+          <p class="small muted">Select the radio button next to the correct option.</p>
+        </fieldset>
+        <p id="eErr" class="form-error" role="alert"></p>
+        <div class="actions">
+          <button class="btn primary">💾 Save statement</button>
+          <button type="button" class="btn ghost" id="eCancel">Cancel</button>
+        </div>
+      </form>`;
+  }
+
+  function bind() {
+    const $ = id => document.getElementById(id);
+    document.querySelectorAll(".topic-pick").forEach(b => b.onclick = () => { selTopic = b.dataset.tid; editing = null; render(); });
+    $("fNewTopic").onsubmit = e => {
+      e.preventDefault();
+      const name = $("newTopicName").value.trim(); if (!name) return;
+      const t = { id: Store.uid("topic"), name, statements: [] };
+      Store.topics().push(t); Store.save(); selTopic = t.id; editing = "new"; render();
+      App.toast("Topic added. Now add its first statement.");
+    };
+    $("mExport").onclick = exportFile;
+    $("mImport").onchange = importFile;
+    $("mReset").onclick = () => {
+      if (!confirm("Replace ALL your notes and progress with the default notes? This cannot be undone.\n\nTip: Export first to keep a backup.")) return;
+      Store.resetDefaults(); selTopic = null; editing = null; open(); App.toast("Default notes restored.");
+    };
+    const t = selTopic && Store.topic(selTopic);
+    if (!t) return;
+    $("fRename").onsubmit = e => { e.preventDefault(); const n = $("topicName").value.trim(); if (!n) return; t.name = n; Store.save(); render(); App.toast("Topic renamed."); };
+    $("delTopic").onclick = () => {
+      if (!confirm(`Delete topic “${t.name}” and all ${t.statements.length} statements?`)) return;
+      const arr = Store.topics(); arr.splice(arr.indexOf(t), 1); Store.deleteTopicProgress(t.id); Store.save();
+      selTopic = null; editing = null; open(); App.toast("Topic deleted.");
+    };
+    $("addSt").onclick = () => { editing = "new"; render(); };
+    document.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => { editing = b.dataset.edit; render(); });
+    document.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
+      const s = t.statements.find(x => x.id === b.dataset.del);
+      if (!s || !confirm(`Delete this statement?\n\n“${s.text.slice(0, 120)}”`)) return;
+      t.statements.splice(t.statements.indexOf(s), 1); Store.save(); if (editing === s.id) editing = null; render(); App.toast("Statement deleted.");
+    });
+    if ($("fSt")) {
+      $("fSt").onsubmit = e => { e.preventDefault(); saveStatement(t); };
+      $("eCancel").onclick = () => { editing = null; render(); };
+    }
+  }
+
+  function saveStatement(t) {
+    const $ = id => document.getElementById(id);
+    const v = id => $(id).value.trim();
+    const errs = [];
+    const text = v("eText");
+    const keywords = textToKw($("eKw").value);
+    if (!text) errs.push("Statement text is required.");
+    if (!keywords.length) errs.push("Add at least one keyword.");
+    const followUps = [0, 1, 2].map(i => ({ question: v("fq" + i), answer: v("fa" + i), keywords: textToKw($("fk" + i).value), hint: v("fh" + i) }))
+      .filter(f => f.question || f.answer || f.keywords.length || f.hint);
+    followUps.forEach((f, i) => { if (!f.question || !f.keywords.length) errs.push(`Follow-up ${i + 1} needs a question and at least one keyword.`); });
+    if (!followUps.length) errs.push("Add at least one follow-up question.");
+    const options = [0, 1, 2, 3].map(i => v("mo" + i));
+    const ansEl = document.querySelector('input[name="mcqAns"]:checked');
+    if (!v("mq")) errs.push("MCQ question is required.");
+    if (options.some(o => !o)) errs.push("All 4 MCQ options are required.");
+    if (!ansEl) errs.push("Pick the correct MCQ option.");
+    if (errs.length) { $("eErr").innerHTML = errs.map(App.esc).join("<br>"); return; }
+
+    const data = { text, keywords, hint: v("eHint"), followUps, mcq: { question: v("mq"), options, answer: +ansEl.value } };
+    if (editing === "new") t.statements.push(Object.assign({ id: Store.uid("st") }, data));
+    else Object.assign(t.statements.find(x => x.id === editing), data);
+    if (!Store.save()) App.toast("⚠ Could not save to this browser's storage. Use Export JSON to keep your notes.");
+    else App.toast("Statement saved.");
+    editing = null; render();
+  }
+
+  function exportFile() {
+    const blob = new Blob([Store.exportJSON()], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "memorise-notes-" + new Date().toISOString().slice(0, 10) + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  function importFile(e) {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(reader.result);
+        const clean = Store.sanitize(parsed);
+        if (!clean.topics.length) throw new Error("No topics found");
+        const n = clean.topics.reduce((a, t) => a + t.statements.length, 0);
+        if (!confirm(`Import ${clean.topics.length} topic(s) with ${n} statement(s)?\n\nOK = replace all current notes.`)) return;
+        Store.replaceAll(clean); selTopic = null; editing = null; open(); App.toast("Notes imported.");
+      } catch (err) { App.toast("Import failed: that file isn't a valid notes JSON."); }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  }
+
+  return { open };
+})();
+
+/* App shell: navigation, home page, theme, toast. */
+const App = (() => {
+  let view = "home";
+  const root = () => document.getElementById("app");
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+  let toastTimer = null;
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg; el.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove("show"), 3500);
+  }
+
+  function show(v) {
+    view = v;
+    document.querySelectorAll(".topnav [data-nav]").forEach(b => b.setAttribute("aria-current", b.dataset.nav === v ? "page" : "false"));
+    window.scrollTo(0, 0);
+  }
+
+  function navigate(target) {
+    if ((Study.isActive() || Quiz.isActive()) &&
+      !confirm("Leave this session? Progress from this unfinished session will not be saved.")) return;
+    Study.stop(); Quiz.stop();
+    if (target === "manage") Manage.open(); else home();
+  }
+
+  function home() {
+    show("home");
+    const ts = Store.topics();
+    root().innerHTML = `
+      <section class="home">
+        <h1>Your topics</h1>
+        <p class="muted">Pick a topic to <strong>memorise</strong> (write it in your own words) or play the <strong>quiz</strong>.</p>
+        ${ts.length ? `<div class="grid">${ts.map(t => {
+          const p = Store.topicProgress(t.id);
+          const lvl = p.pct >= 70 ? "ok" : p.pct >= 40 ? "warn" : "bad";
+          return `<article class="card topic-card">
+            <h2>${esc(t.name)}</h2>
+            <p class="muted small">${t.statements.length} statements · Mastered ${p.mastered}/${p.total}</p>
+            <div class="progress ${p.studied ? lvl : ""}" role="progressbar" aria-label="Memorisation for ${esc(t.name)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${p.pct}"><div style="width:${p.pct}%"></div></div>
+            <p class="small"><strong>${p.pct}%</strong> memorised${p.studied ? "" : " · not studied yet"}${p.quizBest ? ` · 🏆 Quiz best: ${p.quizBest} pts` : ""}</p>
+            <div class="actions">
+              <button class="btn primary" data-study="${esc(t.id)}" ${t.statements.length ? "" : "disabled"}>📖 Memorise</button>
+              <button class="btn" data-quiz="${esc(t.id)}" ${t.statements.length ? "" : "disabled"}>🎮 Quiz</button>
+            </div>
+          </article>`;
+        }).join("")}</div>`
+        : `<div class="card"><p>No topics yet.</p><button class="btn primary" data-nav="manage">Add notes</button></div>`}
+        <details class="card howto">
+          <summary>How it works</summary>
+          <ol>
+            <li><strong>Memorise:</strong> read a statement → press <em>Hide &amp; Test</em> → write it in your own words.</li>
+            <li>The app checks your <strong>keywords</strong>: ≥70% = Correct, 40–69% = Almost, &lt;40% = Wrong. Small spelling mistakes are accepted.</li>
+            <li>Correct → compare with the original, then answer follow-up questions. Wrong → get a hint (max 3 attempts). After 3 misses the statement comes back at the end.</li>
+            <li>Score: 1st attempt 100%, 2nd 60%, 3rd 30%, failed 0%.</li>
+            <li><strong>Quiz:</strong> every statement's MCQ in random order, ${20}s each, with streak bonus.</li>
+          </ol>
+        </details>
+      </section>`;
+    root().querySelectorAll("[data-study]").forEach(b => b.onclick = () => Study.start(b.dataset.study));
+    root().querySelectorAll("[data-quiz]").forEach(b => b.onclick = () => Quiz.start(b.dataset.quiz));
+  }
+
+  function applyTheme(t) {
+    document.documentElement.setAttribute("data-theme", t);
+    const btn = document.getElementById("themeToggle");
+    btn.textContent = t === "dark" ? "☀️" : "🌙";
+    btn.setAttribute("aria-label", t === "dark" ? "Switch to light mode" : "Switch to dark mode");
+    btn.title = btn.getAttribute("aria-label");
+  }
+
+  function init() {
+    Store.load();
+    const saved = Store.getTheme();
+    const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    applyTheme(saved || (prefersDark ? "dark" : "light"));
+    document.getElementById("themeToggle").onclick = () => {
+      const t = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      applyTheme(t); Store.setTheme(t);
+    };
+    // any element with data-nav (header + in-page buttons)
+    document.addEventListener("click", e => {
+      const n = e.target.closest("[data-nav]");
+      if (n) { e.preventDefault(); navigate(n.dataset.nav); }
+    });
+    window.addEventListener("beforeunload", e => {
+      if (Study.isActive() || Quiz.isActive()) { e.preventDefault(); e.returnValue = ""; }
+    });
+    home();
+  }
+
+  return { init, root, esc, toast, show, home };
+})();
+
+document.addEventListener("DOMContentLoaded", App.init);
+</script>
+</body>
+</html>
